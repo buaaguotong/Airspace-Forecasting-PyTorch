@@ -23,7 +23,7 @@ class DCRNNSupervisor:
 
         # logging.
         self._log_dir = self._get_log_dir(kwargs)
-        # self._writer = SummaryWriter('runs/' + self._log_dir)
+        self._writer = SummaryWriter('runs/' + self._log_dir)
 
         log_level = self._kwargs.get('log_level', 'INFO')
         self._logger = utils.get_logger(self._log_dir, __name__, 'info.log', level=log_level)
