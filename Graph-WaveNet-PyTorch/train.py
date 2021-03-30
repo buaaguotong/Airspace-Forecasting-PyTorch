@@ -23,7 +23,7 @@ parser.add_argument('--batch_size',type=int,default=64,help='batch size')
 parser.add_argument('--learning_rate',type=float,default=0.001,help='learning rate')
 parser.add_argument('--dropout',type=float,default=0.3,help='dropout rate')
 parser.add_argument('--weight_decay',type=float,default=0.0001,help='weight decay rate')
-parser.add_argument('--epochs',type=int,default=200,help='')
+parser.add_argument('--epochs',type=int,default=100,help='')
 parser.add_argument('--print_every',type=int,default=50,help='')
 #parser.add_argument('--seed',type=int,default=99,help='random seed')
 parser.add_argument('--save',type=str,default='save/',help='save path')
@@ -68,7 +68,7 @@ def main():
         train_loss, train_mape, train_rmse = [], [], []
         t1 = time.time()
         dataloader['train_loader'].shuffle()
-        for iter, (x, y) in enumerate(dataloader['train_loader'].get_iterator()):
+        for idx, (x, y) in enumerate(dataloader['train_loader'].get_iterator()):
             trainx = torch.Tensor(x).to(device)
             trainx= trainx.transpose(1, 3)
             trainy = torch.Tensor(y).to(device)
@@ -77,16 +77,16 @@ def main():
             train_loss.append(metrics[0])
             train_mape.append(metrics[1])
             train_rmse.append(metrics[2])
-            if iter % args.print_every == 0 :
+            if idx % args.print_every == 0 :
                 log = 'Iter: {:d}, Train Loss: {:.4f}, Train MAPE: {:.4f}, Train RMSE: {:.4f}'
-                print(log.format(iter, train_loss[-1], train_mape[-1], train_rmse[-1]),flush=True)
+                print(log.format(idx, train_loss[-1], train_mape[-1], train_rmse[-1]),flush=True)
         t2 = time.time()
         train_time.append(t2-t1)
         #validation
         valid_loss, valid_mape, valid_rmse = [], [], []
 
         s1 = time.time()
-        for iter, (x, y) in enumerate(dataloader['val_loader'].get_iterator()):
+        for idx, (x, y) in enumerate(dataloader['val_loader'].get_iterator()):
             testx = torch.Tensor(x).to(device)
             testx = testx.transpose(1, 3)
             testy = torch.Tensor(y).to(device)
@@ -114,10 +114,10 @@ def main():
     print("Average Training Time: {:.4f} secs/epoch".format(np.mean(train_time)))
     print("Average Inference Time: {:.4f} secs".format(np.mean(val_time)))
 
-    bestid = np.argmin(his_loss)
+    best_epoch = np.argmin(his_loss)
     print("Training finished")
-    print("The valid loss on best model is", str(round(his_loss[bestid],4)), 'best model: ', beatid)
-    torch.save(engine.model.state_dict(), args.save+"_exp"+str(args.expid)+"_best_"+str(round(his_loss[bestid],2))+".pth")
+    print("The valid loss on best model is", str(round(his_loss[best_epoch],4)), 'best model: ', best_epoch)
+    torch.save(engine.model.state_dict(), args.save+"_exp"+str(args.expid)+"_best_"+str(round(his_loss[best_epoch],2))+".pth")
 
 
 if __name__ == "__main__":
