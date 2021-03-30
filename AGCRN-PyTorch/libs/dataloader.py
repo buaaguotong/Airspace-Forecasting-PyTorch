@@ -1,9 +1,9 @@
 import torch
 import numpy as np
 import torch.utils.data
-from lib.add_window import Add_Window_Horizon
-from lib.load_dataset import load_st_dataset
-from lib.normalization import NScaler, MinMax01Scaler, MinMax11Scaler, StandardScaler, ColumnMinMaxScaler
+from libs.add_window import Add_Window_Horizon
+from libs.load_dataset import load_st_dataset
+from libs.normalization import NScaler, MinMax01Scaler, MinMax11Scaler, StandardScaler, ColumnMinMaxScaler
 
 def normalize_dataset(data, normalizer, column_wise=False):
     if normalizer == 'max01':

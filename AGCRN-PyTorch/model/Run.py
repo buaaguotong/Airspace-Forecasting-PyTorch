@@ -13,9 +13,9 @@ import configparser
 from datetime import datetime
 from model.AGCRN import AGCRN as Network
 from model.BasicTrainer import Trainer
-from lib.TrainInits import init_seed
-from lib.dataloader import get_dataloader
-from lib.TrainInits import print_model_parameters
+from libs.TrainInits import init_seed
+from libs.dataloader import get_dataloader
+from libs.TrainInits import print_model_parameters
 
 
 #*************************************************************************#
