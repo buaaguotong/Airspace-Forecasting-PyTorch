@@ -35,6 +35,6 @@ train:
   max_to_keep: 100
   min_learning_rate: 2.0e-06
   optimizer: adam
-  patience: 50
+  patience: 30
   steps: [20, 30, 40, 50]
   test_every_n_epochs: 10
