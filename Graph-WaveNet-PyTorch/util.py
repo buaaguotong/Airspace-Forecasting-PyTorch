@@ -200,6 +200,23 @@ def metric(pred, real):
     return mae,mape,rmse
 
 def metric_acc(pred, real):
-    
+    y_truths_cls, y_preds_cls = np.zeros(shape=real.size()[0]), np.zeros(shape=pred.size()[0])
+    y_truchs_np, y_pred_np = real.cpu().detach().numpy(), pred.cpu().detach().numpy()
+    print(y_truths_cls.shape, y_truchs_np.shape)
+    for i in range(y_truths_cls.size):
+        if y_truchs_np.reshape(-1)[i] < 2/3:
+            y_truths_cls[i] = 0
+        elif 2/3 <= y_truchs_np.reshape(-1)[i] < 4/3:
+            y_truths_cls[i] = 1
+        else:
+            y_truths_cls[i] = 2
+    for i in range(y_preds_cls.size):
+        if y_pred_np.reshape(-1)[i] < 2/3:
+            y_preds_cls[i] = 0
+        elif 2/3 <= y_pred_np.reshape(-1)[i] < 4/3:
+            y_preds_cls[i] = 1
+        else:
+            y_preds_cls[i] = 2
+    acc = sum(y_truths_cls==y_preds_cls)/(y_truths_cls.size)
     return acc
 
