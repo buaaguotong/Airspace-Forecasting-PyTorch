@@ -78,7 +78,7 @@ def main():
             train_mape.append(metrics[1])
             train_rmse.append(metrics[2])
             if iter % args.print_every == 0 :
-                log = 'Iter: {:03d}, Train Loss: {:.4f}, Train MAPE: {:.4f}, Train RMSE: {:.4f}'
+                log = 'Iter: {:d}, Train Loss: {:.4f}, Train MAPE: {:.4f}, Train RMSE: {:.4f}'
                 print(log.format(iter, train_loss[-1], train_mape[-1], train_rmse[-1]),flush=True)
         t2 = time.time()
         train_time.append(t2-t1)

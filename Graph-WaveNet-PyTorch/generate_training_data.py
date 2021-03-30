@@ -98,7 +98,7 @@ if __name__ == "__main__":
     parser.add_argument("--seq_length_x", type=int, default=12, help="Sequence Length.",)
     parser.add_argument("--seq_length_y", type=int, default=12, help="Sequence Length.",)
     parser.add_argument("--y_start", type=int, default=1, help="Y pred start", )
-    parser.add_argument("--day_in_week", type=bool, default=False, action='store_true',)
+    parser.add_argument("--day_in_week", type=bool, default=False)
 
     args = parser.parse_args()
     if os.path.exists(args.output_dir):
