@@ -215,6 +215,27 @@ def SIGIR_Metrics(pred, true, mask1, mask2):
     corr = CORR_torch(pred, true, 0)
     return rrse, corr
 
+def Metric_Acc(pred, true):
+    y_truths_cls, y_preds_cls = np.zeros(shape=true.size()[0]), np.zeros(shape=pred.size()[0])
+    y_truchs_np, y_pred_np = true.cpu().detach().numpy().reshape(-1), pred.cpu().detach().numpy().reshape(-1)
+    print(y_truths_cls.shape, y_truchs_np.shape)
+    for i in range(y_truths_cls.size):
+        if y_truchs_np[i] < 2/3:
+            y_truths_cls[i] = 0
+        elif 2/3 <= y_truchs_np[i] < 4/3:
+            y_truths_cls[i] = 1
+        else:
+            y_truths_cls[i] = 2
+    for i in range(y_preds_cls.size):
+        if y_pred_np[i] < 2/3:
+            y_preds_cls[i] = 0
+        elif 2/3 <= y_pred_np[i] < 4/3:
+            y_preds_cls[i] = 1
+        else:
+            y_preds_cls[i] = 2
+    acc = sum(y_truths_cls==y_preds_cls)/(y_truths_cls.size)
+    return acc
+
 if __name__ == '__main__':
     pred = torch.Tensor([1, 2, 3,4])
     true = torch.Tensor([2, 1, 4,5])

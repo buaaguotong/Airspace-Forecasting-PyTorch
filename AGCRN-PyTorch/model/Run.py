@@ -87,7 +87,7 @@ def run():
     args.add_argument('--mae_thresh', default=config['test']['mae_thresh'], type=eval)
     args.add_argument('--mape_thresh', default=config['test']['mape_thresh'], type=float)
     #log
-    args.add_argument('--log_dir', default='./', type=str)
+    args.add_argument('--log_dir', default='../save', type=str)
     args.add_argument('--log_step', default=config['log']['log_step'], type=int)
     args.add_argument('--plot', default=config['log']['plot'], type=eval)
     args = args.parse_args()
@@ -147,7 +147,7 @@ def run():
     if args.mode == 'train':
         trainer.train()
     elif args.mode == 'test':
-        model.load_state_dict(torch.load('../pre-trained/{}.pth'.format(args.dataset)))
+        model.load_state_dict(torch.load('../save/{}.pth'.format(args.dataset)))
         print("Load saved model")
         trainer.test(model, trainer.args, test_loader, scaler, trainer.logger)
     else:

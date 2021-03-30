@@ -5,7 +5,7 @@ import time
 import copy
 import numpy as np
 from lib.logger import get_logger
-from lib.metrics import All_Metrics
+from lib.metrics import Metric_Acc
 
 class Trainer(object):
     def __init__(self, model, loss, optimizer, train_loader, val_loader, test_loader,
@@ -169,8 +169,7 @@ class Trainer(object):
             model.load_state_dict(state_dict)
             model.to(args.device)
         model.eval()
-        y_pred = []
-        y_true = []
+        y_pred, y_true = [], []
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(data_loader):
                 data = data[..., :args.input_dim]
@@ -186,13 +185,8 @@ class Trainer(object):
         np.save('./{}_true.npy'.format(args.dataset), y_true.cpu().numpy())
         np.save('./{}_pred.npy'.format(args.dataset), y_pred.cpu().numpy())
         for t in range(y_true.shape[1]):
-            mae, rmse, mape, _, _ = All_Metrics(y_pred[:, t, ...], y_true[:, t, ...],
-                                                args.mae_thresh, args.mape_thresh)
-            logger.info("Horizon {:02d}, MAE: {:.2f}, RMSE: {:.2f}, MAPE: {:.4f}%".format(
-                t + 1, mae, rmse, mape*100))
-        mae, rmse, mape, _, _ = All_Metrics(y_pred, y_true, args.mae_thresh, args.mape_thresh)
-        logger.info("Average Horizon, MAE: {:.2f}, RMSE: {:.2f}, MAPE: {:.4f}%".format(
-                    mae, rmse, mape*100))
+            acc = Metric_Acc(y_pred[:, t, ...], y_true[:, t, ...])
+            logger.info("Horizon {:02d}, Acc: {:.2f}".format(t + 1, acc))
 
     @staticmethod
     def _compute_sampling_threshold(global_step, k):

@@ -199,9 +199,9 @@ def metric(pred, real):
     rmse = masked_rmse(pred,real,0.0).item()
     return mae,mape,rmse
 
-def metric_acc(pred, real):
-    y_truths_cls, y_preds_cls = np.zeros(shape=real.size()[0]), np.zeros(shape=pred.size()[0])
-    y_truchs_np, y_pred_np = real.cpu().detach().numpy(), pred.cpu().detach().numpy()
+def metric_acc(pred, true):
+    y_truths_cls, y_preds_cls = np.zeros(shape=true.size()[0]), np.zeros(shape=pred.size()[0])
+    y_truchs_np, y_pred_np = true.cpu().detach().numpy(), pred.cpu().detach().numpy()
     # print(y_truths_cls.shape, y_truchs_np.shape)
     for i in range(y_truths_cls.size):
         if y_truchs_np[i] < 2/3:
