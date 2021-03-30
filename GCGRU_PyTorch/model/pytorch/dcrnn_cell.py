@@ -35,7 +35,7 @@ class LayerParams:
 
 class DCGRUCell(torch.nn.Module):
     def __init__(self, num_units, adj_mx, max_diffusion_step, num_nodes, nonlinearity='tanh',
-                 filter_type="laplacian", use_gc_for_ru=False):
+                 filter_type="laplacian", use_gc_for_ru=True):
         """
 
         :param num_units:

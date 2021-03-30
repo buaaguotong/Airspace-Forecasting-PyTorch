@@ -18,7 +18,6 @@ def run_dcrnn(args):
         supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
         acc, outputs = supervisor.evaluate_acc('test')
         np.savez_compressed(args.output_filename, **outputs)
-        print("Acc : {}".format(acc))
         print('Predictions saved as {}.'.format(args.output_filename))
 
 

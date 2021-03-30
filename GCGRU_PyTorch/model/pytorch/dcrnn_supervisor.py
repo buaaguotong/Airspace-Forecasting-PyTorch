@@ -305,5 +305,5 @@ class DCRNNSupervisor:
                         y_preds_cls[i] = 2
 
                 acc = sum(y_truths_cls==y_preds_cls)/(y_truths_cls.size)
-                print('acc:', acc)
+                print(f'acc at step {step}: {acc}')
             return acc, {'prediction': y_preds_cls, 'truth': y_truths_cls}

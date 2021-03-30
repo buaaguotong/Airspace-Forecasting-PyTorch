@@ -144,5 +144,5 @@ cython_debug/
 .vscode/
 
 # data & models
-**/airspace
+*.npz
 **/models

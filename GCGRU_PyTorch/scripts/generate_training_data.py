@@ -113,7 +113,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--output_dir", type=str, default="data/airspace", help="Output directory."
+        "--output_dir", type=str, default="../data/airspace", help="Output directory."
     )
     parser.add_argument(
         "--traffic_df_filename", type=str, default="../../data/features.csv", help="Raw traffic readings."
