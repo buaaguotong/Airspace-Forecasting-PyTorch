@@ -8,7 +8,7 @@ import seaborn as sns
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--device', type=str, default='cuda:0', help='')
-parser.add_argument('--data', type=str, default='data', help='data path')
+parser.add_argument('--data', type=str, default='./data', help='data path')
 parser.add_argument('--adjdata', type=str, default='../data/adj_mx_airspace.csv', help='adj data path')
 parser.add_argument('--adjtype', type=str, default='doubletransition', help='adj type')
 parser.add_argument('--gcn_bool', action='store_true', help='whether to add graph convolution layer')
@@ -29,18 +29,17 @@ args = parser.parse_args()
 
 def main():
     device = torch.device(args.device)
-
-    adj_mx = util.load_adj(args.adjdata,args.adjtype)
+    adj_mx = util.load_adj(args.adjdata, args.adjtype)
     supports = [torch.tensor(i).to(device) for i in adj_mx]
-    if args.randomadj:
-        adjinit = None
-    else:
-        adjinit = supports[0]
+    adjinit = supports[0] if args.randomadj else None
 
     if args.aptonly:
         supports = None
 
-    model = gwnet(device, args.num_nodes, args.dropout, supports=supports, gcn_bool=args.gcn_bool, addaptadj=args.addaptadj, aptinit=adjinit)
+    model = gwnet(device, args.num_nodes, args.dropout, supports=supports, gcn_bool=args.gcn_bool,
+        addaptadj=args.addaptadj, aptinit=adjinit, in_dim=args.in_dim, out_dim=args.seq_length,
+        residual_channels=args.nhid, dilation_channels=args.nhid, skip_channels=args.nhid * 8,
+        end_channels=args.nhid * 16)
     model.to(device)
     model.load_state_dict(torch.load(args.checkpoint))
     model.eval()
@@ -63,17 +62,17 @@ def main():
     y_hat = torch.cat(outputs,dim=0)
     y_hat = y_hat[:truth.size(0),...]
 
-
+    acc_mean = []
     for i in range(12):
         pred_i = scaler.inverse_transform(y_hat[:,:,i]).reshape(-1)
         truth_i = truth[:,:,i].reshape(-1)
         acc = util.metric_acc(pred_i, truth_i)
         log = 'Evaluate best model on test data for horizon {:d}, Test Acc: {:.4f}'
         print(log.format(i+1, acc))
+        acc_mean.append(acc)
 
     log = 'Average acc over 12 horizons: {:.4f}'
-    print(log.format(np.mean(acc)))
-
+    print(log.format(np.mean(acc_mean)))
 
     if args.plotheatmap:
         adp = F.softmax(F.relu(torch.mm(model.nodevec1, model.nodevec2)), dim=1)
