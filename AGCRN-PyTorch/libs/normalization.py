@@ -112,9 +112,7 @@ def minmax_by_column(data):
 
 
 if __name__ == '__main__':
-
-
-    test_data = np.array([[0,0,0, 1], [0, 1, 3, 2], [0, 2, 1, 3]])
+    test_data = np.array([[0, 0, 0, 1], [0, 1, 3, 2], [0, 2, 1, 3]])
     print(test_data)
     minimum = test_data.min(axis=1)
     print(minimum, minimum.shape, test_data.shape)

@@ -241,6 +241,7 @@ def Metric_Acc(pred, true):
     accH = sum(y_truth_cls[high_idx]==y_pred_cls[high_idx])/(y_truth_cls[high_idx].size)
     accN = sum(y_truth_cls[normal_idx]==y_pred_cls[normal_idx])/(y_truth_cls[normal_idx].size)
     accL = sum(y_truth_cls[low_idx]==y_pred_cls[low_idx])/(y_truth_cls[low_idx].size)
+    print(f'Class count: High {len(high_idx)}, Normal {len(normal_idx)}, Low {len(low_idx)}, All {y_truth_cls.size}')
     return acc, accH, accN, accL
 
 if __name__ == '__main__':

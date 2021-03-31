@@ -87,7 +87,7 @@ class Trainer(object):
                 self.logger.info('Train Epoch {}: {}/{} Loss: {:.6f}'.format(
                     epoch, batch_idx, self.train_per_epoch, loss.item()))
         train_epoch_loss = total_loss/self.train_per_epoch
-        self.logger.info('**********Train Epoch {}: averaged Loss: {:.6f}, tf_ratio: {:.6f}'.format(epoch, train_epoch_loss, teacher_forcing_ratio))
+        self.logger.info(f'**********Train Epoch {epoch}: averaged Loss: {train_epoch_loss:.6f}, tf_ratio: {teacher_forcing_ratio:.6f}')
 
         #learning rate decay
         if self.args.lr_decay:
@@ -132,7 +132,7 @@ class Trainer(object):
                 best_model = copy.deepcopy(self.model.state_dict())
 
         training_time = time.time() - start_time
-        self.logger.info("Total training time: {:.4f}min, best loss: {:.6f}".format((training_time / 60), best_loss))
+        self.logger.info(f"Total training time: {(training_time / 60):.4f}min, best loss: {best_loss:.6f}")
 
         #save the best model to file
         if not os.path.exists(self.args.log_dir):
