@@ -216,7 +216,7 @@ def SIGIR_Metrics(pred, true, mask1, mask2):
     return rrse, corr
 
 def Metric_Acc(pred, true):
-    y_truth_cls, y_pred_cls = np.zeros(shape=true.size()[0]), np.zeros(shape=pred.size()[0])
+    y_truth_cls, y_pred_cls = np.zeros(shape=true.reshape(-1).size()[0]), np.zeros(shape=pred.reshape(-1).size()[0])
     y_truth_np, y_pred_np = true.cpu().detach().numpy().reshape(-1), pred.cpu().detach().numpy().reshape(-1)
     high_idx, normal_idx, low_idx = [], [], []
     for i in range(y_truth_cls.size):

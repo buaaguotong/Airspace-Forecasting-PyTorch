@@ -19,7 +19,7 @@ Airspace complexity forecasting using GNN-based method
 
 
 **DCRNN**
-```
+```python
 Horizon 00: Acc 0.7896, AccH 0.8463, AccN 0.7797, AccL 0.7044
 Horizon 01: Acc 0.7342, AccH 0.7961, AccN 0.7085, AccL 0.6720
 Horizon 02: Acc 0.6992, AccH 0.7565, AccN 0.6746, AccL 0.6448
@@ -45,4 +45,65 @@ Class count: High 23462, Normal 27067, Low 14751, All 65280
 Class count: High 23298, Normal 27079, Low 14903, All 65280
 Class count: High 23131, Normal 27589, Low 14560, All 65280
 Class count: High 23084, Normal 26734, Low 15462, All 65280
+```
+
+**Graph-Wavenet**
+| Cannot model the Low complexity
+```python
+Horizon 01, Acc: 0.7175, AccH: 0.8364, AccN: 0.8702, AccL: 0.0000
+Horizon 02, Acc: 0.6763, AccH: 0.7830, AccN: 0.8293, AccL: 0.0000
+Horizon 03, Acc: 0.6382, AccH: 0.7829, AccN: 0.7526, AccL: 0.0000
+Horizon 04, Acc: 0.6151, AccH: 0.7326, AccN: 0.7472, AccL: 0.0000
+Horizon 05, Acc: 0.5964, AccH: 0.7085, AccN: 0.7305, AccL: 0.0000
+Horizon 06, Acc: 0.5813, AccH: 0.6893, AccN: 0.7181, AccL: 0.0000
+Horizon 07, Acc: 0.5501, AccH: 0.7705, AccN: 0.5926, AccL: 0.0000
+Horizon 08, Acc: 0.5389, AccH: 0.7652, AccN: 0.5776, AccL: 0.0000
+Horizon 09, Acc: 0.5303, AccH: 0.7590, AccN: 0.5687, AccL: 0.0000
+Horizon 10, Acc: 0.5242, AccH: 0.7555, AccN: 0.5633, AccL: 0.0000
+Horizon 11, Acc: 0.5189, AccH: 0.7505, AccN: 0.5601, AccL: 0.0000
+Horizon 12, Acc: 0.5117, AccH: 0.7462, AccN: 0.5528, AccL: 0.0000
+Average acc: 0.5832
+===========================
+Class count: High 16145, Normal 20308, Low 6999, All 43452
+Class count: High 16051, Normal 20281, Low 7120, All 43452
+Class count: High 15947, Normal 20258, Low 7247, All 43452
+Class count: High 15849, Normal 20231, Low 7372, All 43452
+Class count: High 15751, Normal 20196, Low 7505, All 43452
+Class count: High 15661, Normal 20140, Low 7651, All 43452
+Class count: High 15554, Normal 20108, Low 7790, All 43452
+Class count: High 15447, Normal 20077, Low 7928, All 43452
+Class count: High 15349, Normal 20029, Low 8074, All 43452
+Class count: High 15244, Normal 19988, Low 8220, All 43452
+Class count: High 15148, Normal 19956, Low 8348, All 43452
+Class count: High 15049, Normal 19906, Low 8497, All 43452
+```
+
+**AGCRN**
+| Performance drops sharply on Low complexity categories
+```python
+Horizon 01, Acc: 0.7758, AccH: 0.8321, AccN: 0.7794, AccL: 0.6483
+Horizon 02, Acc: 0.7183, AccH: 0.7791, AccN: 0.7250, AccL: 0.5768
+Horizon 03, Acc: 0.6664, AccH: 0.7485, AccN: 0.7153, AccL: 0.3740
+Horizon 04, Acc: 0.5753, AccH: 0.7263, AccN: 0.6501, AccL: 0.0887
+Horizon 05, Acc: 0.5180, AccH: 0.7147, AccN: 0.5515, AccL: 0.0627
+Horizon 06, Acc: 0.4956, AccH: 0.7173, AccN: 0.5090, AccL: 0.0567
+Horizon 07, Acc: 0.4866, AccH: 0.7116, AccN: 0.4986, AccL: 0.0567
+Horizon 08, Acc: 0.4814, AccH: 0.7122, AccN: 0.4922, AccL: 0.0551
+Horizon 09, Acc: 0.4770, AccH: 0.7108, AccN: 0.4887, AccL: 0.0549
+Horizon 10, Acc: 0.4725, AccH: 0.7130, AccN: 0.4825, AccL: 0.0545
+Horizon 11, Acc: 0.4685, AccH: 0.7121, AccN: 0.4799, AccL: 0.0527
+Horizon 12, Acc: 0.4645, AccH: 0.7154, AccN: 0.4737, AccL: 0.0538
+=======================
+Class count: High 14050, Normal 18581, Low 6741, All 39372
+Class count: High 13938, Normal 18575, Low 6859, All 39372
+Class count: High 13831, Normal 18559, Low 6982, All 39372
+Class count: High 13728, Normal 18534, Low 7110, All 39372
+Class count: High 13613, Normal 18517, Low 7242, All 39372
+Class count: High 13511, Normal 18471, Low 7390, All 39372
+Class count: High 13406, Normal 18433, Low 7533, All 39372
+Class count: High 13305, Normal 18393, Low 7674, All 39372
+Class count: High 13198, Normal 18354, Low 7820, All 39372
+Class count: High 13084, Normal 18324, Low 7964, All 39372
+Class count: High 12961, Normal 18311, Low 8100, All 39372
+Class count: High 12846, Normal 18274, Low 8252, All 39372
 ```
