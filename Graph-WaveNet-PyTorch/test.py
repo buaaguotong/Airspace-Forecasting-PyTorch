@@ -1,3 +1,4 @@
+import os
 import util
 import argparse
 from model import *
@@ -62,35 +63,20 @@ def main():
     y_hat = torch.cat(outputs,dim=0)
     y_hat = y_hat[:truth.size(0),...]
 
-    acc_mean = []
+    acc_mean, pred_all, truth_all = [], [], []
     for i in range(12):
-        pred_i = scaler.inverse_transform(y_hat[:,:,i]).reshape(-1)
-        truth_i = truth[:,:,i].reshape(-1)
-        acc, accH, accN, accL = util.metric_acc(pred_i, truth_i)
-        log = 'Horizon {:02d}, Acc: {:.4f}, AccH: {:.4f}, AccN: {:.4f}, AccL: {:.4f}'
-        print(log.format(i+1, acc, accH, accN, accL))
+        pred_i = scaler.inverse_transform(y_hat[:,:,i]).cpu().detach().numpy()
+        truth_i = truth[:,:,i].cpu().detach().numpy()
+        acc, accH, accN, accL = util.metric_acc(pred_i.reshape(-1), truth_i.reshape(-1))
+        print(f'Horizon {(i+1):02d}, Acc: {acc:.4f}, AccH: {accH:.4f}, AccN: {accN:.4f}, AccL: {accL:.4f}')
         acc_mean.append(acc)
+        pred_all.append(pred_i)
+        truth_all.append(truth_i)
 
     log = 'Average acc: {:.4f}'
     print(log.format(np.mean(acc_mean)))
-
-    if args.plotheatmap:
-        adp = F.softmax(F.relu(torch.mm(model.nodevec1, model.nodevec2)), dim=1)
-        device = torch.device('cpu')
-        adp.to(device)
-        adp = adp.cpu().detach().numpy()
-        adp = adp*(1/np.max(adp))
-        df = pd.DataFrame(adp)
-        sns.heatmap(df, cmap="RdYlBu")
-        plt.savefig("./emb"+ '.pdf')
-
-    # select predicted data of node #99 
-    y12 = truth[:,99,11].cpu().detach().numpy()
-    y3 = truth[:,99,2].cpu().detach().numpy()
-    yhat12 = scaler.inverse_transform(y_hat[:,99,11]).cpu().detach().numpy()
-    yhat3 = scaler.inverse_transform(y_hat[:,99,2]).cpu().detach().numpy()
-    df2 = pd.DataFrame({'real12':y12,'pred12':yhat12, 'real3': y3, 'pred3':yhat3})
-    df2.to_csv('./wave.csv',index=False)
+    output = {'prediction': pred_all, 'truth': truth_all}
+    np.savez_compressed('./predicted_results.npz', **output)
 
 
 if __name__ == "__main__":

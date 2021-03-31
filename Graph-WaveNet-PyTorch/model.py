@@ -196,8 +196,6 @@ class gwnet(nn.Module):
                 x = self.residual_convs[i](x)
 
             x = x + residual[:, :, :, -x.size(3):]
-
-
             x = self.bn[i](x)
 
         x = F.relu(skip)

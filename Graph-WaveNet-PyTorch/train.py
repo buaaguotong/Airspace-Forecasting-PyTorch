@@ -1,3 +1,4 @@
+import os
 import torch
 import numpy as np
 import argparse
@@ -42,7 +43,6 @@ def main():
     dataloader = util.load_dataset(args.data, args.batch_size, args.batch_size, args.batch_size)
     scaler = dataloader['scaler']
     supports = [torch.tensor(i).to(device) for i in adj_mx]
-
     print(args)
     
     if args.randomadj:
@@ -54,8 +54,8 @@ def main():
         supports = None
 
     engine = trainer(scaler, args.in_dim, args.seq_length, args.num_nodes, args.nhid, args.dropout,
-                         args.learning_rate, args.weight_decay, device, supports, args.gcn_bool, args.addaptadj,
-                         adjinit)
+                     args.learning_rate, args.weight_decay, device, supports, args.gcn_bool, args.addaptadj,
+                     adjinit)
 
     print("Start training...",flush=True)
     his_loss =[]
@@ -70,21 +70,18 @@ def main():
         dataloader['train_loader'].shuffle()
         for idx, (x, y) in enumerate(dataloader['train_loader'].get_iterator()):
             trainx = torch.Tensor(x).to(device)
-            trainx= trainx.transpose(1, 3)
+            trainx = trainx.transpose(1, 3)
             trainy = torch.Tensor(y).to(device)
             trainy = trainy.transpose(1, 3)
             metrics = engine.train(trainx, trainy[:,0,:,:])
             train_loss.append(metrics[0])
             train_mape.append(metrics[1])
             train_rmse.append(metrics[2])
-            if idx % args.print_every == 0 :
-                log = 'Iter: {:d}, Train Loss: {:.4f}, Train MAPE: {:.4f}, Train RMSE: {:.4f}'
-                print(log.format(idx, train_loss[-1], train_mape[-1], train_rmse[-1]),flush=True)
         t2 = time.time()
         train_time.append(t2-t1)
+        
         #validation
         valid_loss, valid_mape, valid_rmse = [], [], []
-
         s1 = time.time()
         for idx, (x, y) in enumerate(dataloader['val_loader'].get_iterator()):
             testx = torch.Tensor(x).to(device)
@@ -95,35 +92,31 @@ def main():
             valid_loss.append(metrics[0])
             valid_mape.append(metrics[1])
             valid_rmse.append(metrics[2])
-        s2 = time.time()
-        log = 'Epoch: {:03d}, Inference Time: {:.4f} secs'
-        print(log.format(i,(s2-s1)))
-        val_time.append(s2-s1)
-        mtrain_loss = np.mean(train_loss)
-        mtrain_mape = np.mean(train_mape)
-        mtrain_rmse = np.mean(train_rmse)
+        infer_time = time.time() - s1
+        print(f'Epoch: {i:03d}, Inference Time: {infer_time:.4f} secs')
+        val_time.append(infer_time)
 
-        mvalid_loss = np.mean(valid_loss)
-        mvalid_mape = np.mean(valid_mape)
-        mvalid_rmse = np.mean(valid_rmse)
+        mtrain_loss, mtrain_mape, mtrain_rmse = np.mean(train_loss), np.mean(train_mape), np.mean(train_rmse)
+        mvalid_loss, mvalid_mape, mvalid_rmse = np.mean(valid_loss), np.mean(valid_mape), np.mean(valid_rmse)
+        
         his_loss.append(mvalid_loss)
-
         log = 'Epoch: {:03d}, Train Loss: {:.4f}, Train MAPE: {:.4f}, Train RMSE: {:.4f}, Valid Loss: {:.4f}, Valid MAPE: {:.4f}, Valid RMSE: {:.4f}, Training Time: {:.4f}/epoch'
-        print(log.format(i, mtrain_loss, mtrain_mape, mtrain_rmse, mvalid_loss, mvalid_mape, mvalid_rmse, (t2 - t1)),flush=True)
+        print(log.format(i, mtrain_loss, mtrain_mape, mtrain_rmse, mvalid_loss, mvalid_mape, mvalid_rmse, (t2 - t1)), flush=True)
         if not os.path.exists(args.save):
             os.makedirs(args.save)
         torch.save(engine.model.state_dict(), args.save+"_epoch_"+str(i)+"_"+str(round(mvalid_loss,2))+".pth")
+
     print("Average Training Time: {:.4f} secs/epoch".format(np.mean(train_time)))
     print("Average Inference Time: {:.4f} secs".format(np.mean(val_time)))
 
     best_epoch = np.argmin(his_loss)
     print("Training finished")
     print("The valid loss on best model is", str(round(his_loss[best_epoch],4)), 'best model: ', best_epoch)
-    torch.save(engine.model.state_dict(), args.save+"_exp"+str(args.expid)+"_best_"+str(round(his_loss[best_epoch],2))+".pth")
+    torch.save(engine.model.state_dict(), args.save + "_exp" + str(args.expid) + "_best_" + str(round(his_loss[best_epoch],2)) + ".pth")
 
 
 if __name__ == "__main__":
-    t1 = time.time()
+    start_time = time.time()
     main()
-    t2 = time.time()
-    print("Total time spent: {:.4f}".format(t2-t1))
+    end_time = time.time()
+    print("Total time spent: {:.4f}".format(end_time-start_time))

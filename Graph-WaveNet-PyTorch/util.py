@@ -200,8 +200,8 @@ def metric(pred, real):
     return mae,mape,rmse
 
 def metric_acc(pred, true):
-    y_truth_cls, y_pred_cls = np.zeros(shape=true.size()[0]), np.zeros(shape=pred.size()[0])
-    y_truth_np, y_pred_np = true.cpu().detach().numpy(), pred.cpu().detach().numpy()
+    y_truth_np, y_pred_np = true, pred
+    y_truth_cls, y_pred_cls = np.zeros(shape=true.size), np.zeros(shape=pred.size)
     high_idx, normal_idx, low_idx = [], [], []
     for i in range(y_truth_cls.size):
         if y_truth_np[i] < 2/3:

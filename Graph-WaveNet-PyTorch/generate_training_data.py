@@ -69,7 +69,7 @@ def generate_train_val_test(args):
     print("x shape: ", x.shape, ", y shape: ", y.shape)
     # Write the data into npz file.
     num_samples = x.shape[0]
-    num_test = round(num_samples * 0.2)
+    num_test = round(num_samples * 0.15)
     num_train = round(num_samples * 0.7)
     num_val = num_samples - num_test - num_train
     x_train, y_train = x[:num_train], y[:num_train]
