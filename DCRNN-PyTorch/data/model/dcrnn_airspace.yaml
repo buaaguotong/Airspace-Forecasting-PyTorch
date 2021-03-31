@@ -3,10 +3,10 @@ base_dir: data/model
 log_level: INFO
 
 data:
-  batch_size: 64
+  batch_size: 128
   dataset_dir: data/airspace
-  test_batch_size: 64
-  val_batch_size: 64
+  test_batch_size: 128
+  val_batch_size: 128
   graph_filename: ../data/adj_mx_airspace.csv
 
 model:
@@ -35,6 +35,6 @@ train:
   max_to_keep: 100
   min_learning_rate: 2.0e-06
   optimizer: adam
-  patience: 30
+  patience: 20
   steps: [20, 30, 40, 50]
   test_every_n_epochs: 10

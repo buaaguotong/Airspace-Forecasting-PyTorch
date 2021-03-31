@@ -266,50 +266,48 @@ class DCRNNSupervisor:
             self.dcrnn_model = self.dcrnn_model.eval()
 
             data_iterator = self._data['{}_loader'.format(dataset)].get_iterator()
-            y_truths, y_preds, losses = [], [], []
+            y_truth, y_pred, losses = [], [], []
 
             for _, (x, y) in enumerate(data_iterator):
                 x, y = self._prepare_data(x, y)
-
                 output = self.dcrnn_model(x)
-                y_truths.append(y.cpu())
-                y_preds.append(output.cpu())
+                y_truth.append(y.cpu())
+                y_pred.append(output.cpu())
 
-            y_preds = np.concatenate(y_preds, axis=1)
-            y_truths = np.concatenate(y_truths, axis=1)  # concatenate on batch dimension
-            y_truths_scaled, y_preds_scaled = \
-                np.zeros(shape=y_truths.shape), np.zeros(shape=y_preds.shape)
-            for t in range(y_preds.shape[0]):
-                y_truth = self.standard_scaler.inverse_transform(y_truths[t])
-                y_pred = self.standard_scaler.inverse_transform(y_preds[t])
-                y_truths_scaled[t, :, :] = y_truth
-                y_preds_scaled[t, :, :] = y_pred
+            y_pred, y_truth = np.concatenate(y_pred, axis=1), np.concatenate(y_truth, axis=1)  # concatenate on batch dimension
+            y_truth_scaled, y_pred_scaled = \
+                self.standard_scaler.inverse_transform(y_truth), self.standard_scaler.inverse_transform(y_pred) 
             
+            y_truth_cls_all, y_pred_cls_all = [], []
             for step in range(12):
-                y_truths_scaled_step, y_preds_scaled_step = y_truths_scaled[step], y_preds_scaled[step]
-                y_truth_cls, y_pred_cls = np.zeros(shape=y_truths_scaled_step.size), np.zeros(shape=y_preds_scaled_step.size)
+                y_truth_scaled_step, y_pred_scaled_step = y_truth_scaled[step].reshape(-1), y_pred_scaled[step].reshape(-1)
+                y_truth_cls, y_pred_cls = np.zeros(shape=y_truth_scaled_step.size), np.zeros(shape=y_pred_scaled_step.size)
                 high_idx, normal_idx, low_idx = [], [], []
                 for i in range(y_truth_cls.size):
-                    if y_truths_scaled_step.reshape(-1)[i] < 2/3:
+                    if y_truth_scaled_step[i] < 2/3:
                         y_truth_cls[i] = 0
                         low_idx.append(i)
-                    elif 2/3 <= y_truths_scaled_step.reshape(-1)[i] < 4/3:
+                    elif 2/3 <= y_truth_scaled_step[i] < 4/3:
                         y_truth_cls[i] = 1
                         normal_idx.append(i)
                     else:
                         y_truth_cls[i] = 2
                         high_idx.append(i)
+                y_truth_cls_all.append(y_truth_cls)
+
                 for i in range(y_pred_cls.size):
-                    if y_preds_scaled_step.reshape(-1)[i] < 2/3:
+                    if y_pred_scaled_step[i] < 2/3:
                         y_pred_cls[i] = 0
-                    elif 2/3 <= y_preds_scaled_step.reshape(-1)[i] < 4/3:
+                    elif 2/3 <= y_pred_scaled_step[i] < 4/3:
                         y_pred_cls[i] = 1
                     else:
                         y_pred_cls[i] = 2
+                y_pred_cls_all.append(y_pred_cls)
 
                 acc = sum(y_truth_cls==y_pred_cls)/(y_truth_cls.size)
                 accH = sum(y_truth_cls[high_idx]==y_pred_cls[high_idx])/(y_truth_cls[high_idx].size)
                 accN = sum(y_truth_cls[normal_idx]==y_pred_cls[normal_idx])/(y_truth_cls[normal_idx].size)
                 accL = sum(y_truth_cls[low_idx]==y_pred_cls[low_idx])/(y_truth_cls[low_idx].size)
-                print(f'Horizon {step}: Acc {acc}, AccH {accH}, AccN {accN}, AccL {accL}')
-            return acc, {'prediction': y_pred_cls, 'truth': y_truth_cls}
+                print(f'======= Class count: High {len(high_idx)}, Normal {len(normal_idx)}, Low {len(low_idx)}, All {y_truth_cls.size}')
+                print(f'Horizon {step:02d}: Acc {acc:.4f}, AccH {accH:.4f}, AccN {accN:.4f}, AccL {accL:.4f}')
+            return acc, {'prediction': y_pred_cls_all, 'truth': y_truth_cls_all}

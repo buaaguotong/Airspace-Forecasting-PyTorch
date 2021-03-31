@@ -102,24 +102,17 @@ class Trainer(object):
         val_loss_list = []
         start_time = time.time()
         for epoch in range(1, self.args.epochs + 1):
-            #epoch_time = time.time()
             train_epoch_loss = self.train_epoch(epoch)
-            #print(time.time()-epoch_time)
-            #exit()
             if self.val_loader == None:
                 val_dataloader = self.test_loader
             else:
                 val_dataloader = self.val_loader
             val_epoch_loss = self.val_epoch(epoch, val_dataloader)
-
-            #print('LR:', self.optimizer.param_groups[0]['lr'])
             train_loss_list.append(train_epoch_loss)
             val_loss_list.append(val_epoch_loss)
             if train_epoch_loss > 1e6:
                 self.logger.warning('Gradient explosion detected. Ending...')
                 break
-            #if self.val_loader == None:
-            #val_epoch_loss = train_epoch_loss
             if val_epoch_loss < best_loss:
                 best_loss = val_epoch_loss
                 not_improved_count = 0
@@ -133,7 +126,7 @@ class Trainer(object):
                     self.logger.info("Validation performance didn\'t improve for {} epochs. "
                                     "Training stops.".format(self.args.early_stop_patience))
                     break
-            # save the best state
+            # save the best state in memory
             if best_state == True:
                 self.logger.info('*********************************Current best model saved!')
                 best_model = copy.deepcopy(self.model.state_dict())
@@ -142,7 +135,8 @@ class Trainer(object):
         self.logger.info("Total training time: {:.4f}min, best loss: {:.6f}".format((training_time / 60), best_loss))
 
         #save the best model to file
-
+        if not os.path.exists(self.args.log_dir):
+            os.makedirs(self.args.log_dir)
         torch.save(best_model, self.best_path)
         self.logger.info("Saving current best model to " + self.best_path)
 
@@ -157,6 +151,8 @@ class Trainer(object):
             'optimizer': self.optimizer.state_dict(),
             'config': self.args
         }
+        if not os.path.exists(self.args.log_dir):
+            os.makedirs(self.args.log_dir)
         torch.save(state, self.best_path)
         self.logger.info("Saving current best model to " + self.best_path)
 
@@ -186,7 +182,7 @@ class Trainer(object):
         np.save('./{}_pred.npy'.format(args.dataset), y_pred.cpu().numpy())
         for t in range(y_true.shape[1]):
             acc, accH, accN, accL = Metric_Acc(y_pred[:, t, ...], y_true[:, t, ...])
-            logger.info("Horizon {:02d}, Acc: {:.4f}, AccH: {:.4f}, AccN: {:.4f}, AccL: {:.4f}".format(t + 1, acc, accH, accN, accL))
+            logger.info(f"Horizon {(t+1):02d}, Acc: {acc:.4f}, AccH: {accH:.4f}, AccN: {accN:.4f}, AccL: {accL:.4f}")
 
     @staticmethod
     def _compute_sampling_threshold(global_step, k):
