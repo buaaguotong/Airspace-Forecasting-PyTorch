@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from lib import utils
+from libs import utils
 from model.pytorch.dcrnn_model import DCRNNModel
 from model.pytorch.loss import masked_mae_loss
 
@@ -287,23 +287,29 @@ class DCRNNSupervisor:
             
             for step in range(12):
                 y_truths_scaled_step, y_preds_scaled_step = y_truths_scaled[step], y_preds_scaled[step]
-                y_truths_cls, y_preds_cls = np.zeros(shape=y_truths_scaled_step.size), np.zeros(shape=y_preds_scaled_step.size)
-
-                for i in range(y_truths_cls.size):
+                y_truth_cls, y_pred_cls = np.zeros(shape=y_truths_scaled_step.size), np.zeros(shape=y_preds_scaled_step.size)
+                high_idx, normal_idx, low_idx = [], [], []
+                for i in range(y_truth_cls.size):
                     if y_truths_scaled_step.reshape(-1)[i] < 2/3:
-                        y_truths_cls[i] = 0
+                        y_truth_cls[i] = 0
+                        low_idx.append(i)
                     elif 2/3 <= y_truths_scaled_step.reshape(-1)[i] < 4/3:
-                        y_truths_cls[i] = 1
+                        y_truth_cls[i] = 1
+                        normal_idx.append(i)
                     else:
-                        y_truths_cls[i] = 2
-                for i in range(y_preds_cls.size):
+                        y_truth_cls[i] = 2
+                        high_idx.append(i)
+                for i in range(y_pred_cls.size):
                     if y_preds_scaled_step.reshape(-1)[i] < 2/3:
-                        y_preds_cls[i] = 0
+                        y_pred_cls[i] = 0
                     elif 2/3 <= y_preds_scaled_step.reshape(-1)[i] < 4/3:
-                        y_preds_cls[i] = 1
+                        y_pred_cls[i] = 1
                     else:
-                        y_preds_cls[i] = 2
+                        y_pred_cls[i] = 2
 
-                acc = sum(y_truths_cls==y_preds_cls)/(y_truths_cls.size)
-                print(f'acc at step {step}: {acc}')
-            return acc, {'prediction': y_preds_cls, 'truth': y_truths_cls}
+                acc = sum(y_truth_cls==y_pred_cls)/(y_truth_cls.size)
+                accH = sum(y_truth_cls[high_idx]==y_pred_cls[high_idx])/(y_truth_cls[high_idx].size)
+                accN = sum(y_truth_cls[normal_idx]==y_pred_cls[normal_idx])/(y_truth_cls[normal_idx].size)
+                accL = sum(y_truth_cls[low_idx]==y_pred_cls[low_idx])/(y_truth_cls[low_idx].size)
+                print(f'Horizon {step}: Acc {acc}, AccH {accH}, AccN {accN}, AccL {accL}')
+            return acc, {'prediction': y_pred_cls, 'truth': y_truth_cls}

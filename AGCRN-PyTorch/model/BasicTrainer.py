@@ -142,6 +142,7 @@ class Trainer(object):
         self.logger.info("Total training time: {:.4f}min, best loss: {:.6f}".format((training_time / 60), best_loss))
 
         #save the best model to file
+
         torch.save(best_model, self.best_path)
         self.logger.info("Saving current best model to " + self.best_path)
 
@@ -184,8 +185,8 @@ class Trainer(object):
         np.save('./{}_true.npy'.format(args.dataset), y_true.cpu().numpy())
         np.save('./{}_pred.npy'.format(args.dataset), y_pred.cpu().numpy())
         for t in range(y_true.shape[1]):
-            acc = Metric_Acc(y_pred[:, t, ...], y_true[:, t, ...])
-            logger.info("Horizon {:02d}, Acc: {:.4f}".format(t + 1, acc))
+            acc, accH, accN, accL = Metric_Acc(y_pred[:, t, ...], y_true[:, t, ...])
+            logger.info("Horizon {:02d}, Acc: {:.4f}, AccH: {:.4f}, AccN: {:.4f}, AccL: {:.4f}".format(t + 1, acc, accH, accN, accL))
 
     @staticmethod
     def _compute_sampling_threshold(global_step, k):

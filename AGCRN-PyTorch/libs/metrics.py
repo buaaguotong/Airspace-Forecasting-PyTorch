@@ -216,25 +216,32 @@ def SIGIR_Metrics(pred, true, mask1, mask2):
     return rrse, corr
 
 def Metric_Acc(pred, true):
-    y_truths_cls, y_preds_cls = np.zeros(shape=true.size()[0]), np.zeros(shape=pred.size()[0])
-    y_truchs_np, y_pred_np = true.cpu().detach().numpy().reshape(-1), pred.cpu().detach().numpy().reshape(-1)
-    print(y_truths_cls.shape, y_truchs_np.shape)
-    for i in range(y_truths_cls.size):
-        if y_truchs_np[i] < 2/3:
-            y_truths_cls[i] = 0
-        elif 2/3 <= y_truchs_np[i] < 4/3:
-            y_truths_cls[i] = 1
+    y_truth_cls, y_pred_cls = np.zeros(shape=true.size()[0]), np.zeros(shape=pred.size()[0])
+    y_truth_np, y_pred_np = true.cpu().detach().numpy().reshape(-1), pred.cpu().detach().numpy().reshape(-1)
+    high_idx, normal_idx, low_idx = [], [], []
+    for i in range(y_truth_cls.size):
+        if y_truth_np[i] < 2/3:
+            y_truth_cls[i] = 0
+            low_idx.append(i)
+        elif 2/3 <= y_truth_np[i] < 4/3:
+            y_truth_cls[i] = 1
+            normal_idx.append(i)
         else:
-            y_truths_cls[i] = 2
-    for i in range(y_preds_cls.size):
+            y_truth_cls[i] = 2
+            high_idx.append(i)
+    for i in range(y_pred_cls.size):
         if y_pred_np[i] < 2/3:
-            y_preds_cls[i] = 0
+            y_pred_cls[i] = 0
         elif 2/3 <= y_pred_np[i] < 4/3:
-            y_preds_cls[i] = 1
+            y_pred_cls[i] = 1
         else:
-            y_preds_cls[i] = 2
-    acc = sum(y_truths_cls==y_preds_cls)/(y_truths_cls.size)
-    return acc
+            y_pred_cls[i] = 2
+    
+    acc = sum(y_truth_cls==y_pred_cls)/(y_truth_cls.size)
+    accH = sum(y_truth_cls[high_idx]==y_pred_cls[high_idx])/(y_truth_cls[high_idx].size)
+    accN = sum(y_truth_cls[normal_idx]==y_pred_cls[normal_idx])/(y_truth_cls[normal_idx].size)
+    accL = sum(y_truth_cls[low_idx]==y_pred_cls[low_idx])/(y_truth_cls[low_idx].size)
+    return acc, accH, accN, accL
 
 if __name__ == '__main__':
     pred = torch.Tensor([1, 2, 3,4])

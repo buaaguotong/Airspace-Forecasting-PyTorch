@@ -66,12 +66,12 @@ def main():
     for i in range(12):
         pred_i = scaler.inverse_transform(y_hat[:,:,i]).reshape(-1)
         truth_i = truth[:,:,i].reshape(-1)
-        acc = util.metric_acc(pred_i, truth_i)
-        log = 'Evaluate best model on test data for horizon {:d}, Test Acc: {:.4f}'
-        print(log.format(i+1, acc))
+        acc, accH, accN, accL = util.metric_acc(pred_i, truth_i)
+        log = 'Horizon {:02d}, Acc: {:.4f}, AccH: {:.4f}, AccN: {:.4f}, AccL: {:.4f}'
+        print(log.format(i+1, acc, accH, accN, accL))
         acc_mean.append(acc)
 
-    log = 'Average acc over 12 horizons: {:.4f}'
+    log = 'Average acc: {:.4f}'
     print(log.format(np.mean(acc_mean)))
 
     if args.plotheatmap:

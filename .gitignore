@@ -145,6 +145,7 @@ cython_debug/
 
 # data & models
 *.npz
+*.npy
 *.pth
 *.tar
 *.csv

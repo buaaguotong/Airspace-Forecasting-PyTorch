@@ -32,7 +32,7 @@ def run():
     config = configparser.ConfigParser()
     config.read(config_file)
 
-    from lib.metrics import MAE_torch
+    from libs.metrics import MAE_torch
     def masked_mae_loss(scaler, mask_value):
         def loss(preds, labels):
             if scaler:
@@ -136,10 +136,10 @@ def run():
         #lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=64)
 
     #config log path
-    current_time = datetime.now().strftime('%Y%m%d%H%M%S')
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    log_dir = os.path.join(current_dir,'experiments', args.dataset, current_time)
-    args.log_dir = log_dir
+    # current_time = datetime.now().strftime('%Y%m%d%H%M%S')
+    # current_dir = os.path.dirname(os.path.realpath(__file__))
+    # log_dir = os.path.join(current_dir,'experiments', current_time)
+    # args.log_dir = log_dir
 
     #start training
     trainer = Trainer(model, loss, optimizer, train_loader, val_loader, test_loader, scaler,
