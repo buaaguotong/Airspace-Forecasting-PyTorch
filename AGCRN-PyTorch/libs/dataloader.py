@@ -113,7 +113,7 @@ if __name__ == '__main__':
     #MetrLA 207; BikeNYC 128; SIGIR_solar 137; SIGIR_electric 321
     DATASET = 'airspace'
     if DATASET == 'airspace':
-        NODE_NUM = 204    
+        NODE_NUM = 126    
     elif DATASET == 'MetrLA':
         NODE_NUM = 207
     elif DATASET == 'BikeNYC':

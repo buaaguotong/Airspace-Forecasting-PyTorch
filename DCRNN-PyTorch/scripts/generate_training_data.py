@@ -114,7 +114,7 @@ if __name__ == "__main__":
         "--output_dir", type=str, default="../data/airspace", help="Output directory."
     )
     parser.add_argument(
-        "--traffic_df_filename", type=str, default="../../data/features.csv", help="Raw traffic readings."
+        "--traffic_df_filename", type=str, default="../../data/cplx_feature.csv", help="Raw traffic readings."
     )
     args = parser.parse_args()
     main(args)

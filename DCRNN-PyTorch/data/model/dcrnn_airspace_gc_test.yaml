@@ -7,7 +7,7 @@ data:
   dataset_dir: data/airspace
   test_batch_size: 64
   val_batch_size: 64
-  graph_filename: ../data/adj_mx_airspace.csv
+  graph_filename: ../data/adj_mx_geo_126.csv
 
 model:
   cl_decay_steps: 2000
@@ -15,7 +15,7 @@ model:
   input_dim: 1
   l1_decay: 0
   max_diffusion_step: 2
-  num_nodes: 204
+  num_nodes: 126
   num_rnn_layers: 2
   output_dim: 1
   rnn_units: 64
