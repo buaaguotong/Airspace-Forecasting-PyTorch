@@ -182,11 +182,17 @@ def load_dataset(dataset_dir, batch_size, test_batch_size=None, **kwargs):
         cat_data = np.load(os.path.join(dataset_dir, category + '.npz'))
         data['x_' + category] = cat_data['x']
         data['y_' + category] = cat_data['y']
-    scaler = StandardScaler(mean=data['x_train'][..., 0].mean(), std=data['x_train'][..., 0].std())
-    # Data format
+        
+    scaler = StandardScaler(mean=data['x_train'][..., -1].mean(), std=data['x_train'][..., -1].std())
     for category in ['train', 'val', 'test']:
-        data['x_' + category][..., 0] = scaler.transform(data['x_' + category][..., 0])
-        data['y_' + category][..., 0] = scaler.transform(data['y_' + category][..., 0])
+        data['x_' + category][..., -1] = scaler.transform(data['x_' + category][..., -1])
+        data['y_' + category][..., -1] = scaler.transform(data['y_' + category][..., -1])
+
+    for idx in range(data['x_train'].shape[-1] - 1):
+        scaler_feature = StandardScaler(mean=data['x_train'][..., idx].mean(), std=data['x_train'][..., idx].std())
+        for category in ['train', 'val', 'test']:
+            data['x_' + category][..., idx] = scaler_feature.transform(data['x_' + category][..., idx])
+    
     data['train_loader'] = DataLoader(data['x_train'], data['y_train'], batch_size, shuffle=True)
     data['val_loader'] = DataLoader(data['x_val'], data['y_val'], test_batch_size, shuffle=False)
     data['test_loader'] = DataLoader(data['x_test'], data['y_test'], test_batch_size, shuffle=False)

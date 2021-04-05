@@ -36,9 +36,9 @@ class DCRNNSupervisor:
         self.input_dim = int(self._model_kwargs.get('input_dim', 1))
         self.seq_len = int(self._model_kwargs.get('seq_len'))  # for the encoder
         self.output_dim = int(self._model_kwargs.get('output_dim', 1))
+        self.horizon = int(self._model_kwargs.get('horizon', 1))  # for the decoder
         self.use_curriculum_learning = bool(
             self._model_kwargs.get('use_curriculum_learning', False))
-        self.horizon = int(self._model_kwargs.get('horizon', 1))  # for the decoder
 
         # setup model
         dcrnn_model = DCRNNModel(adj_mx, self._logger, **self._model_kwargs)
