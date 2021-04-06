@@ -132,7 +132,7 @@ def load_adj(file_path, adjtype):
     return adj
 
 
-def load_dataset(dataset_dir, batch_size, test_batch_size=None, **kwargs):
+def load_dataset(dataset_dir, batch_size, valid_batch_size= None, test_batch_size=None):
     data = {}
     for category in ['train', 'val', 'test']:
         cat_data = np.load(os.path.join(dataset_dir, category + '.npz'))
@@ -149,9 +149,9 @@ def load_dataset(dataset_dir, batch_size, test_batch_size=None, **kwargs):
         for category in ['train', 'val', 'test']:
             data['x_' + category][..., idx] = scaler_feature.transform(data['x_' + category][..., idx])
     
-    data['train_loader'] = DataLoader(data['x_train'], data['y_train'], batch_size, shuffle=True)
-    data['val_loader'] = DataLoader(data['x_val'], data['y_val'], test_batch_size, shuffle=False)
-    data['test_loader'] = DataLoader(data['x_test'], data['y_test'], test_batch_size, shuffle=False)
+    data['train_loader'] = DataLoader(data['x_train'], data['y_train'], batch_size)
+    data['val_loader'] = DataLoader(data['x_val'], data['y_val'], valid_batch_size)
+    data['test_loader'] = DataLoader(data['x_test'], data['y_test'], test_batch_size)
     data['scaler'] = scaler
 
     return data

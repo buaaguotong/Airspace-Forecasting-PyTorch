@@ -15,12 +15,12 @@ def Add_Window_Horizon(data, window=3, horizon=1, single=False):
     if single:
         while index < end_index:
             X.append(data[index:index+window])
-            Y.append(data[index+window+horizon-1:index+window+horizon])
+            Y.append(np.expand_dims(data[index+window+horizon-1:index+window+horizon, :, -1], axis=-1))
             index = index + 1
     else:
         while index < end_index:
             X.append(data[index:index+window])
-            Y.append(data[index+window:index+window+horizon])
+            Y.append(np.expand_dims(data[index+window:index+window+horizon, :, -1], axis=-1))
             index = index + 1
     X = np.array(X)
     Y = np.array(Y)

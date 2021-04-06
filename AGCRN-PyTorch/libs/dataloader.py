@@ -31,10 +31,10 @@ def normalize_dataset(data, normalizer, column_wise=False):
             mean = data.mean(axis=0, keepdims=True)
             std = data.std(axis=0, keepdims=True)
         else:
-            mean = data.mean()
-            std = data.std()
-        scaler = StandardScaler(mean, std)
-        data = scaler.transform(data)
+            for idx in range(data.shape[-1]):
+                scaler = StandardScaler(mean=data[..., idx].mean(), std=data[..., idx].std())
+                data[..., idx] = scaler.transform(data[..., idx])
+
         print('Normalize the dataset by Standard Normalization')
     elif normalizer == 'None':
         scaler = NScaler()
@@ -130,5 +130,6 @@ if __name__ == '__main__':
     parser.add_argument('--lag', default=12, type=int)
     parser.add_argument('--horizon', default=12, type=int)
     parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--column_wise', default=False, type=bool)
     args = parser.parse_args()
     train_dataloader, val_dataloader, test_dataloader, scaler = get_dataloader(args, normalizer = 'std', tod=False, dow=False, weather=False, single=True)

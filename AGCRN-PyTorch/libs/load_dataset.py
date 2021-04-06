@@ -5,7 +5,7 @@ import pandas as pd
 def load_st_dataset(dataset):
     #output B, N, D
     if dataset == 'airspace':
-        data = pd.read_csv('../../data/features.npy', header=None)
+        data = np.load('../../data/features.npy')
     elif dataset == 'PEMSD4':
         data_path = os.path.join('../data/PeMSD4/pems04.npz')
         data = np.load(data_path)['data'][:, :, 0]  #onley the first dimension, traffic flow data
