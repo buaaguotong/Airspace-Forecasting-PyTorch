@@ -40,8 +40,8 @@ def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets):
 
 def generate_train_val_test(args):
     data = np.load(args.traffic_df_filename)
-    x_offsets = np.sort(np.arange(-11, 1, 1))
-    y_offsets = np.sort(np.arange(1, 13, 1))
+    x_offsets = np.sort(np.arange(1-args.seq_len, 1, 1))
+    y_offsets = np.sort(np.arange(1, 1+args.horizon, 1))
     # x: (num_samples, input_length, num_nodes, input_dim)
     # y: (num_samples, output_length, num_nodes, output_dim)
     x, y = generate_graph_seq2seq_io_data(
@@ -86,11 +86,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--output_dir", type=str, default="../data/airspace", help="Output directory."
-    )
-    parser.add_argument(
-        "--traffic_df_filename", type=str, default="../../data/features.npy", help="Raw traffic readings."
-    )
+    parser.add_argument("--output_dir", type=str, default="../data/airspace")
+    parser.add_argument("--traffic_df_filename", type=str, default="../../data/features.npy")
+    parser.add_argument("--seq_len", type=int, default=20)
+    parser.add_argument("--horizon", type=int, default=20)
     args = parser.parse_args()
     main(args)

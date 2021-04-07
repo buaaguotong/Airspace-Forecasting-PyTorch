@@ -100,6 +100,8 @@ class DCRNNModel(nn.Module, Seq2SeqAttrs):
         Seq2SeqAttrs.__init__(self, adj_mx, **model_kwargs)
         self.encoder_model = EncoderModel(adj_mx, **model_kwargs)
         self.decoder_model = DecoderModel(adj_mx, **model_kwargs)
+        self.input_dim = int(model_kwargs.get('input_dim', 17))
+        self.fc = nn.Linear(self.input_dim, 1)
         self.cl_decay_steps = int(model_kwargs.get('cl_decay_steps', 1000))
         self.use_curriculum_learning = bool(model_kwargs.get('use_curriculum_learning', False))
         self._logger = logger
@@ -114,6 +116,8 @@ class DCRNNModel(nn.Module, Seq2SeqAttrs):
         :param inputs: shape (seq_len, batch_size, num_sensor * input_dim)
         :return: encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)
         """
+        seq_len, batch_size, _ = inputs.shape
+        inputs = self.fc(inputs.reshape(seq_len, batch_size, -1, self.input_dim)).reshape(seq_len, batch_size, -1)
         encoder_hidden_state = None
         for t in range(self.encoder_model.seq_len):
             _, encoder_hidden_state = self.encoder_model(inputs[t], encoder_hidden_state)
