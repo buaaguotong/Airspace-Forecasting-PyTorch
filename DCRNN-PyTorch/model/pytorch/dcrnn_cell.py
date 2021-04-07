@@ -120,8 +120,7 @@ class DCGRUCell(torch.nn.Module):
         weights = self._fc_params.get_weights((input_size, output_size))
         value = torch.sigmoid(torch.matmul(inputs_and_state, weights))
         biases = self._fc_params.get_biases(output_size, bias_start)
-        value += biases
-        return value
+        return value + biases
 
     def _gconv(self, inputs, state, output_size, bias_start=0.0):
         # Reshape input and state to (batch_size, num_nodes, input_dim/state_dim)
