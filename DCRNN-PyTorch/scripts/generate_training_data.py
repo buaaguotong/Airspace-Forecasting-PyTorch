@@ -58,12 +58,8 @@ def generate_train_val_test(args):
     # df = pd.read_hdf(args.traffic_df_filename)
     df = pd.read_csv(args.traffic_df_filename, header=None)
     # 0 is the latest observed sample.
-    x_offsets = np.sort(
-        # np.concatenate(([-week_size + 1, -day_size + 1], np.arange(-11, 1, 1)))
-        np.concatenate((np.arange(-11, 1, 1),))
-    )
-    # Predict the next one hour
-    y_offsets = np.sort(np.arange(1, 13, 1))
+    x_offsets = np.sort(np.concatenate((np.arange(1-args.seq_len, 1, args.interval),)))
+    y_offsets = np.sort(np.arange(1, 1+args.horizon, args.interval))
     # x: (num_samples, input_length, num_nodes, input_dim)
     # y: (num_samples, output_length, num_nodes, output_dim)
     x, y = generate_graph_seq2seq_io_data(
@@ -110,11 +106,11 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--output_dir", type=str, default="../data/airspace", help="Output directory."
-    )
-    parser.add_argument(
-        "--traffic_df_filename", type=str, default="../../data/cplx_feature.csv", help="Raw traffic readings."
-    )
+    parser.add_argument("--output_dir", type=str, default="../data/airspace")
+    parser.add_argument("--traffic_df_filename", type=str, default="../../data/cplx_feature.csv")
+    parser.add_argument("--seq_len", type=int, default=12)
+    parser.add_argument("--horizon", type=int, default=12)
+    parser.add_argument("--interval", type=int, default=1)
+
     args = parser.parse_args()
     main(args)
