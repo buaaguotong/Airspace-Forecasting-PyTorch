@@ -5,7 +5,6 @@ import os
 import pickle
 import scipy.sparse as sp
 import sys
-import tensorflow as tf
 
 from scipy.sparse import linalg
 

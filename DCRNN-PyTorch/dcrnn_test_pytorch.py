@@ -16,8 +16,9 @@ def run_dcrnn(args):
         adj_mx = load_graph_data(graph_filename)
 
         supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
-        acc, outputs = supervisor.evaluate('test')
+        losses, outputs = supervisor.evaluate_acc('test')
         np.savez_compressed(args.output_filename, **outputs)
+        print(f'losses: {losses}')
         print('Predictions saved as {}.'.format(args.output_filename))
 
 
