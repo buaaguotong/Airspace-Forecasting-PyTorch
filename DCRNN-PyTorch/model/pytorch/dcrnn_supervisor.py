@@ -278,7 +278,7 @@ class DCRNNSupervisor:
             y_truth_scaled, y_pred_scaled = \
                 self.standard_scaler.inverse_transform(y_truth), self.standard_scaler.inverse_transform(y_pred) 
             
-            for step in range(self.seq_len):
+            for step in range(self.horizon):
                 y_truth_scaled_step, y_pred_scaled_step = y_truth_scaled[step].reshape(-1), y_pred_scaled[step].reshape(-1)
                 y_truth_cls, y_pred_cls = np.zeros(shape=y_truth_scaled_step.size), np.zeros(shape=y_pred_scaled_step.size)
                 high_idx, normal_idx, low_idx = [], [], []
@@ -305,6 +305,6 @@ class DCRNNSupervisor:
                 accH = sum(y_truth_cls[high_idx]==y_pred_cls[high_idx])/(y_truth_cls[high_idx].size)
                 accN = sum(y_truth_cls[normal_idx]==y_pred_cls[normal_idx])/(y_truth_cls[normal_idx].size)
                 accL = sum(y_truth_cls[low_idx]==y_pred_cls[low_idx])/(y_truth_cls[low_idx].size)
-                print(f'======= Class count: High {len(high_idx)}, Normal {len(normal_idx)}, Low {len(low_idx)}, All {y_truth_cls.size}')
+                # print(f'======= Class count: High {len(high_idx)}, Normal {len(normal_idx)}, Low {len(low_idx)}, All {y_truth_cls.size}')
                 print(f'Horizon {step:02d}: Acc {acc:.4f}, AccH {accH:.4f}, AccN {accN:.4f}, AccL {accL:.4f}')
             return acc, {'prediction': y_pred_scaled, 'truth': y_truth_scaled}
