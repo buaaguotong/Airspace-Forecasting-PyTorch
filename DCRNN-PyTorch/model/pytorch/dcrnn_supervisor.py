@@ -6,6 +6,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from libs import utils
+from libs.metrics import masked_rmse_np, masked_mape_np, masked_mae_np
 from model.pytorch.dcrnn_model import DCRNNModel
 from model.pytorch.loss import masked_mae_loss
 
@@ -308,3 +309,28 @@ class DCRNNSupervisor:
                 # print(f'======= Class count: High {len(high_idx)}, Normal {len(normal_idx)}, Low {len(low_idx)}, All {y_truth_cls.size}')
                 print(f'Horizon {step:02d}: Acc {acc:.4f}, AccH {accH:.4f}, AccN {accN:.4f}, AccL {accL:.4f}')
             return acc, {'prediction': y_pred_scaled, 'truth': y_truth_scaled}
+
+    def evaluate_pred(self, dataset='test', batches_seen=0):
+        with torch.no_grad():
+            self.dcrnn_model = self.dcrnn_model.eval()
+
+            data_iterator = self._data['{}_loader'.format(dataset)].get_iterator()
+            y_truth, y_pred, losses = [], [], []
+
+            for _, (x, y) in enumerate(data_iterator):
+                x, y = self._prepare_data(x, y)
+                output = self.dcrnn_model(x)
+                y_truth.append(y.cpu())
+                y_pred.append(output.cpu())
+
+            y_pred, y_truth = np.concatenate(y_pred, axis=1), np.concatenate(y_truth, axis=1)  # concatenate on batch dimension
+            y_truth_scaled, y_pred_scaled = \
+                self.standard_scaler.inverse_transform(y_truth), self.standard_scaler.inverse_transform(y_pred) 
+            mae, rmse, mape = [], [], []
+            for step in range(self.horizon):
+                y_truth_scaled_step, y_pred_scaled_step = y_truth_scaled[step].reshape(-1), y_pred_scaled[step].reshape(-1)
+                mae.append(masked_mae_np(y_pred_scaled_step, y_truth_scaled_step, 0))
+                rmse.append(masked_rmse_np(y_pred_scaled_step, y_truth_scaled_step, 0))
+                mape.append(masked_mape_np(y_pred_scaled_step, y_truth_scaled_step, 0))
+                print(f'Horizon {step:02d}: MAE {mae[-1]:.4f}, RMSE {rmse[-1]:.4f}, MAPE {mape[-1]:.4f}')
+            return mae, {'prediction': y_pred_scaled, 'truth': y_truth_scaled}
