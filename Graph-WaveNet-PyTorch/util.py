@@ -197,7 +197,7 @@ def metric(pred, real):
     mae = masked_mae(pred,real,0.0).item()
     mape = masked_mape(pred,real,0.0).item()
     rmse = masked_rmse(pred,real,0.0).item()
-    return mae,mape,rmse
+    return mae, mape, rmse
 
 def metric_acc(pred, true):
     y_truth_np, y_pred_np = true, pred

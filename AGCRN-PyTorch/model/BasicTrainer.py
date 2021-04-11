@@ -5,7 +5,7 @@ import time
 import copy
 import numpy as np
 from libs.logger import get_logger
-from libs.metrics import Metric_Acc
+from libs.metrics import Metric_Acc, All_Metrics
 
 class Trainer(object):
     def __init__(self, model, loss, optimizer, train_loader, val_loader, test_loader,
@@ -181,8 +181,11 @@ class Trainer(object):
         np.save('./{}_true.npy'.format(args.dataset), y_true.cpu().numpy())
         np.save('./{}_pred.npy'.format(args.dataset), y_pred.cpu().numpy())
         for t in range(y_true.shape[1]):
-            acc, accH, accN, accL = Metric_Acc(y_pred[:, t, ...], y_true[:, t, ...])
-            logger.info(f"Horizon {(t+1):02d}, Acc: {acc:.4f}, AccH: {accH:.4f}, AccN: {accN:.4f}, AccL: {accL:.4f}")
+            # acc, accH, accN, accL = Metric_Acc(y_pred[:, t, ...], y_true[:, t, ...])
+            # logger.info(f"Horizon {(t+1):02d}, Acc: {acc:.4f}, AccH: {accH:.4f}, AccN: {accN:.4f}, AccL: {accL:.4f}")
+            mae, rmse, mape, _, _ = All_Metrics(y_pred[:, t, ...], y_true[:, t, ...],
+                                                args.mae_thresh, args.mape_thresh)
+            logger.info(f"Horizon {t+1:02d}, MAE: {mae:.2f}, RMSE: {rmse:.2f}, MAPE: {mape*100:.4f}%")
 
     @staticmethod
     def _compute_sampling_threshold(global_step, k):

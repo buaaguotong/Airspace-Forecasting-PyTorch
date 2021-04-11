@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
 from libs import utils
 from libs.metrics import masked_rmse_np, masked_mape_np, masked_mae_np
@@ -24,7 +24,7 @@ class DCRNNSupervisor:
 
         # logging.
         self._log_dir = self._get_log_dir(kwargs)
-        self._writer = SummaryWriter('runs/' + self._log_dir)
+        # self._writer = SummaryWriter('runs/' + self._log_dir)
 
         log_level = self._kwargs.get('log_level', 'INFO')
         self._logger = utils.get_logger(self._log_dir, __name__, 'info.log', level=log_level)
@@ -132,7 +132,7 @@ class DCRNNSupervisor:
                 y_preds.append(output.cpu())
 
             mean_loss = np.mean(losses)
-            self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
+            # self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
             y_preds = np.concatenate(y_preds, axis=1)
             y_truths = np.concatenate(y_truths, axis=1)  # concatenate on batch dimension
 
@@ -192,7 +192,7 @@ class DCRNNSupervisor:
             self._logger.info("evaluating now!")
             val_loss, _ = self.evaluate(dataset='val', batches_seen=batches_seen)
             end_time = time.time()
-            self._writer.add_scalar('training loss', np.mean(losses), batches_seen)
+            # self._writer.add_scalar('training loss', np.mean(losses), batches_seen)
 
             if (epoch_num % log_every) == log_every - 1:
                 message = 'Epoch [{}/{}] ({}) train_mae: {:.4f}, val_mae: {:.4f}, lr: {:.6f}, ' \
@@ -332,5 +332,5 @@ class DCRNNSupervisor:
                 mae.append(masked_mae_np(y_pred_scaled_step, y_truth_scaled_step, 0))
                 rmse.append(masked_rmse_np(y_pred_scaled_step, y_truth_scaled_step, 0))
                 mape.append(masked_mape_np(y_pred_scaled_step, y_truth_scaled_step, 0))
-                print(f'Horizon {step:02d}: MAE {mae[-1]:.4f}, RMSE {rmse[-1]:.4f}, MAPE {mape[-1]:.4f}')
+                print(f'Horizon {step+1:02d}: MAE {mae[-1]:.4f}, RMSE {rmse[-1]:.4f}, MAPE {mape[-1]*100:.4f}%')
             return mae, {'prediction': y_pred_scaled, 'truth': y_truth_scaled}

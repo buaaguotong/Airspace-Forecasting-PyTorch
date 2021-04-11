@@ -4,8 +4,6 @@ import argparse
 from model import *
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--device', type=str, default='cuda:0', help='')
@@ -20,7 +18,7 @@ parser.add_argument('--seq_length', type=int,default=12, help='')
 parser.add_argument('--nhid', type=int, default=64, help='')
 parser.add_argument('--in_dim', type=int, default=1, help='inputs dimension')
 parser.add_argument('--num_nodes', type=int, default=126, help='number of nodes')
-parser.add_argument('--batch_size', type=int, default=64, help='batch size')
+parser.add_argument('--batch_size', type=int, default=128, help='batch size')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')
 parser.add_argument('--dropout', type=float, default=0.3, help='dropout rate')
 parser.add_argument('--weight_decay', type=float, default=0.0001, help='weight decay rate')
@@ -63,20 +61,20 @@ def main():
     y_hat = torch.cat(outputs,dim=0)
     y_hat = y_hat[:truth.size(0),...]
 
-    acc_mean, pred_all, truth_all = [], [], []
+    mae_mean, pred_all, truth_all = [], [], []
     for i in range(12):
-        pred_i = scaler.inverse_transform(y_hat[:,:,i]).cpu().detach().numpy()
-        truth_i = truth[:,:,i].cpu().detach().numpy()
-        acc, accH, accN, accL = util.metric_acc(pred_i.reshape(-1), truth_i.reshape(-1))
-        print(f'Horizon {(i+1):02d}, Acc: {acc:.4f}, AccH: {accH:.4f}, AccN: {accN:.4f}, AccL: {accL:.4f}')
-        acc_mean.append(acc)
-        pred_all.append(pred_i)
-        truth_all.append(truth_i)
+        pred_i = scaler.inverse_transform(y_hat[:,:,i])
+        truth_i = truth[:,:,i]
+        mae, mape, rmse = util.metric(pred_i.reshape(-1), truth_i.reshape(-1))
+        print(f'Horizon {(i+1):02d}, MAE: {mae:.4f}, RMSE: {rmse:.4f}, MAPE: {mape*100:.4f}%')
+        mae_mean.append(mae)
+        pred_all.append(pred_i.cpu().detach().numpy())
+        truth_all.append(truth_i.cpu().detach().numpy())
 
-    log = 'Average acc: {:.4f}'
-    print(log.format(np.mean(acc_mean)))
+    log = 'Average mae: {:.4f}'
+    print(log.format(np.mean(mae_mean)))
     output = {'prediction': pred_all, 'truth': truth_all}
-    np.savez_compressed('./predicted_results.npz', **output)
+    np.savez_compressed('./gwn_predicted_results.npz', **output)
 
 
 if __name__ == "__main__":

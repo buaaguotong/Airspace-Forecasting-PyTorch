@@ -5,7 +5,6 @@ import os
 import pickle
 import scipy.sparse as sp
 import sys
-import tensorflow as tf
 
 from scipy.sparse import linalg
 
@@ -13,7 +12,6 @@ from scipy.sparse import linalg
 class DataLoader(object):
     def __init__(self, xs, ys, batch_size, pad_with_last_sample=True, shuffle=False):
         """
-
         :param xs:
         :param ys:
         :param batch_size:
@@ -182,8 +180,7 @@ def load_dataset(dataset_dir, batch_size, test_batch_size=None, **kwargs):
         cat_data = np.load(os.path.join(dataset_dir, category + '.npz'))
         data['x_' + category] = cat_data['x']
         data['y_' + category] = cat_data['y']
-    data['all'] = np.concatenate((np.concatenate((data['x_train'], data['x_val']), axis=0) ,data['x_test']), axis=0)
-    scaler = StandardScaler(mean=data['all'].mean(), std=data['all'].std())
+    scaler = StandardScaler(mean=data['x_train'][..., 0].mean(), std=data['x_train'][..., 0].std())
     # Data format
     for category in ['train', 'val', 'test']:
         data['x_' + category] = scaler.transform(data['x_' + category])
@@ -192,7 +189,6 @@ def load_dataset(dataset_dir, batch_size, test_batch_size=None, **kwargs):
     data['val_loader'] = DataLoader(data['x_val'], data['y_val'], test_batch_size, shuffle=False)
     data['test_loader'] = DataLoader(data['x_test'], data['y_test'], test_batch_size, shuffle=False)
     data['scaler'] = scaler
-
     return data
 
 
