@@ -1,0 +1,104 @@
+import time
+import random
+import argparse
+import torch
+
+import numpy as np
+import torch.optim as optim
+import torch.nn as nn
+
+from utils.adj_normalization import load_adj
+from utils.data_generator import generate_train_val_test
+from models.trainer import Trainer
+from models.model import AirspaceModel
+
+
+def init_seed(seed=2021):
+    '''
+    Disable cudnn to maximize reproducibility
+    '''
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.cudnn_enabled = False
+    torch.backends.cudnn.deterministic = True
+
+
+def print_model_parameters(model, only_num = True):
+    print('\n***************** Model Parameter *****************')
+    if not only_num:
+        for name, param in model.named_parameters():
+            print(name, param.shape, param.requires_grad)
+    total_num = sum([param.nelement() for param in model.parameters()])
+    print('Total params num: {}'.format(total_num))
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    # data args
+    parser.add_argument("--feature_data_path", type=str, default="data/features.npy")
+    parser.add_argument("--adj_data_path", type=str, default="data/adj_mx_geo_126.csv")
+    parser.add_argument("--adj_type", type=str, default="doubletransition")
+    parser.add_argument('--num_nodes', type=int, default=126)
+    parser.add_argument("--seq_length_x", type=int, default=12)
+    parser.add_argument("--seq_length_y", type=int, default=12)
+    parser.add_argument("--y_start", type=int, default=1)
+    # model args
+    parser.add_argument('--in_dims', type=int, default=17)
+    parser.add_argument('--out_dims', type=int, default=1)
+    parser.add_argument('--hid_dims', type=int, default=64)
+    # train args
+    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--epochs', type=int, default=200)
+    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr_decay_rate', default=0.3, type=float)
+    parser.add_argument('--lr_decay_step', default='5,20,40,70', type=str)
+    parser.add_argument('--dropout', type=float, default=0.3)
+    parser.add_argument('--weight_decay', type=float, default=0.0001)
+    parser.add_argument('--grad_norm', default=True, type=bool)
+    parser.add_argument('--max_grad_norm', default=5, type=int)
+    parser.add_argument('--patience', default=30, type=int)
+    parser.add_argument('--device', type=str, default='cuda')
+
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    #--------------------------------------------------------
+    #------------------ Init data & args --------------------
+    #--------------------------------------------------------
+    init_seed()
+    args = get_args()
+    device = torch.device(args.device)
+    adj_mx = load_adj(args.adj_data_path, args.adj_type)
+    train_loader, val_loader, test_loader, scaler = generate_train_val_test(args)
+    supports = [torch.tensor(i).to(device) for i in adj_mx]
+    print(f'\n***************** Input Args ******************\n{args}')
+    #--------------------------------------------------------
+    #------------------ Init model & trainer --------------------
+    #--------------------------------------------------------
+    model = AirspaceModel(args.in_dims, args.out_dims, args.hid_dims)
+    model = model.to(args.device)
+    for p in model.parameters():
+        if p.dim() > 1:
+            nn.init.xavier_uniform_(p)
+        else:
+            nn.init.uniform_(p)
+    print_model_parameters(model, only_num=False)
+
+    loss = nn.MSELoss().to(args.device)
+    optimizer = optim.Adam(params=model.parameters(), lr=args.lr, eps=1.0e-8, weight_decay=args.weight_decay, amsgrad=False)
+    lr_decay_steps = [int(i) for i in list(args.lr_decay_step.split(','))]
+    lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=lr_decay_steps, gamma=args.lr_decay_rate)
+    trainer = Trainer(model, loss, optimizer, lr_scheduler,  
+                    train_loader, val_loader, test_loader, scaler, args)
+    trainer.train()
+
+
+if __name__ == "__main__":
+    start_time = time.time()
+    main()
+    end_time = time.time()
+    print("Total time spent: {:.4f}".format(end_time-start_time))

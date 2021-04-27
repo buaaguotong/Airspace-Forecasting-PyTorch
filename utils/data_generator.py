@@ -60,7 +60,7 @@ def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets, scaler=None):
 
 def generate_train_val_test(args):
     seq_length_x, seq_length_y = args.seq_length_x, args.seq_length_y
-    raw_data = np.load(args.raw_data_path)
+    raw_data = np.load(args.feature_data_path)
     data, scaler = normalize_dataset(raw_data)
 
     x_offsets = np.sort(np.concatenate((np.arange(-(seq_length_x - 1), 1, 1),)))
@@ -69,6 +69,7 @@ def generate_train_val_test(args):
     # x: (num_samples, input_length, num_nodes, input_dim)
     # y: (num_samples, output_length, num_nodes, output_dim)
     x, y = generate_graph_seq2seq_io_data(data, x_offsets, y_offsets)
+    print('\n****************** Data Generator ******************')
     print(f'x shape: {x.shape}, y shape: {y.shape}')
 
     # Write the data into npz file.

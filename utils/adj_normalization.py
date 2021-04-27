@@ -30,12 +30,12 @@ def asym_adj(adj):
     return d_mat.dot(adj).astype(np.float32).todense()
 
 
-def load_adj(file_path, adjtype):
-    df = pd.read_csv(file_path, header=None)
+def load_adj(adj_data_path, adj_type):
+    df = pd.read_csv(adj_data_path, header=None)
     adj_mx = df.to_numpy().astype(np.float32)
-    if adjtype == "normlap":
+    if adj_type == "normlap":
         adj = [calculate_normalized_laplacian(adj_mx)]
-    elif adjtype == "doubletransition":
+    elif adj_type == "doubletransition":
         adj = [asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))]
     return adj
 
