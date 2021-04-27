@@ -2,12 +2,12 @@ import os
 import logging
 from datetime import datetime
 
-def get_logger(root, name=None, debug=True):
+def get_logger(root, debug=True):
     #when debug is true, show DEBUG and INFO in screen
     #when debug is false, show DEBUG in file and info in both screen&file
     #INFO will always be in screen
     # create a logger
-    logger = logging.getLogger(name)
+    logger = logging.getLogger('Model')
     #critical > error > warning > info > debug > notset
     logger.setLevel(logging.DEBUG)
 
@@ -21,7 +21,7 @@ def get_logger(root, name=None, debug=True):
         console_handler.setLevel(logging.INFO)
         # create a handler for write log to file
         logfile = os.path.join(root, 'run.log')
-        print('Creat Log File in: ', logfile)
+        print(f'Experiment log path at: {logfile}')
         file_handler = logging.FileHandler(logfile, mode='w')
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)

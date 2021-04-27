@@ -1,5 +1,10 @@
+import os
 import time
 import torch
+import copy
+
+from datetime import datetime
+from utils.get_logger import get_logger
 
 class Trainer:
     def __init__(self, model, loss, optimizer, lr_scheduler,  
@@ -17,6 +22,12 @@ class Trainer:
 
         self.train_per_epoch = len(train_loader)
         self.val_per_epoch = len(val_loader)
+
+        log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M")}')
+        if os.path.isdir(log_dir) == False:
+            os.makedirs(log_dir, exist_ok=True)
+        self.logger = get_logger(log_dir, debug=args.debug)
+        self.best_path = os.path.join(log_dir, f'best_model_{datetime.now().strftime("%m%d%H%M")}.pth')
 
 
     def val_epoch(self, epoch):
@@ -61,12 +72,20 @@ class Trainer:
             val_epoch_loss = self.val_epoch(epoch)
             train_loss_list.append(train_epoch_loss)
             val_loss_list.append(val_epoch_loss)
-            print(f'epoch {epoch:03d} train_epoch_loss: {train_epoch_loss} val_epoch_loss: {val_epoch_loss}')
+            self.logger.info(f'epoch {epoch:03d} | train_epoch_loss: {train_epoch_loss:.6f} | val_epoch_loss: {val_epoch_loss:.6f}')
             if val_epoch_loss < best_loss:
                 best_loss, not_improved_count, best_state = val_epoch_loss, 0, True
             else:
                 not_improved_count, best_state = not_improved_count + 1, False
+
             if not_improved_count == self.args.patience:
                 self.logger.info(f'Early stop at epoch: {epoch}.')
                 break
+            if best_state == True:
+                self.logger.info('*** Current best model saved! ***')
+                best_model = copy.deepcopy(self.model.state_dict())
+
         training_time = time.time() - start_time
+        torch.save(best_model, self.best_path)
+        self.logger.info(f'Saving current best model at {self.best_path}')
+        self.logger.info(f"Total training time: {(training_time / 60):.4f} min, best loss: {best_loss:.6f}")

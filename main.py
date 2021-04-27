@@ -60,6 +60,10 @@ def get_args():
     parser.add_argument('--max_grad_norm', default=5, type=int)
     parser.add_argument('--patience', default=30, type=int)
     parser.add_argument('--device', type=str, default='cuda')
+    # log & save args
+    parser.add_argument('--log_dir', type=str, default='checkpoints')
+    parser.add_argument('--debug', type=bool, default=False)
+
 
     args = parser.parse_args()
     return args
@@ -101,4 +105,4 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     end_time = time.time()
-    print("Total time spent: {:.4f}".format(end_time-start_time))
+    print(f'Total time spent: {end_time-start_time:.4f}')
