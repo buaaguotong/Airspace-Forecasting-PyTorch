@@ -21,7 +21,7 @@ def get_logger(root, debug=True):
         console_handler.setLevel(logging.INFO)
         # create a handler for write log to file
         logfile = os.path.join(root, 'run.log')
-        print(f'Experiment log path at: {logfile}')
+        print(f'\nExperiment log path at: {logfile}')
         file_handler = logging.FileHandler(logfile, mode='w')
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)

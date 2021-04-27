@@ -72,20 +72,25 @@ class Trainer:
             val_epoch_loss = self.val_epoch(epoch)
             train_loss_list.append(train_epoch_loss)
             val_loss_list.append(val_epoch_loss)
-            self.logger.info(f'epoch {epoch:03d} | train_epoch_loss: {train_epoch_loss:.6f} | val_epoch_loss: {val_epoch_loss:.6f}')
+
             if val_epoch_loss < best_loss:
                 best_loss, not_improved_count, best_state = val_epoch_loss, 0, True
             else:
                 not_improved_count, best_state = not_improved_count + 1, False
-
             if not_improved_count == self.args.patience:
                 self.logger.info(f'Early stop at epoch: {epoch}.')
                 break
+
             if best_state == True:
-                self.logger.info('*** Current best model saved! ***')
+                self.logger.info(f'epoch {epoch:03d} | train_loss: {train_epoch_loss:.6f} | ' +
+                    f'val_loss: {val_epoch_loss:.6f} | lr: {self.lr_scheduler.get_last_lr()[0]:.6f} (Current best)')
                 best_model = copy.deepcopy(self.model.state_dict())
+            else:
+                self.logger.info(f'epoch {epoch:03d} | train_loss: {train_epoch_loss:.6f} | ' +
+                    f'val_loss: {val_epoch_loss:.6f} | lr: {self.lr_scheduler.get_last_lr()[0]:.6f}')
 
         training_time = time.time() - start_time
         torch.save(best_model, self.best_path)
+        self.logger.info('*********************** Train Finish ***********************')
         self.logger.info(f'Saving current best model at {self.best_path}')
         self.logger.info(f"Total training time: {(training_time / 60):.4f} min, best loss: {best_loss:.6f}")

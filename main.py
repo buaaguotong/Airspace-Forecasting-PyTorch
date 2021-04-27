@@ -52,7 +52,7 @@ def get_args():
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=200)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--lr_decay_rate', default=0.3, type=float)
+    parser.add_argument('--lr_decay_rate', default=0.1, type=float)
     parser.add_argument('--lr_decay_step', default='5,20,40,70', type=str)
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--weight_decay', type=float, default=0.0001)
@@ -64,7 +64,6 @@ def get_args():
     parser.add_argument('--log_dir', type=str, default='checkpoints')
     parser.add_argument('--debug', type=bool, default=False)
 
-
     args = parser.parse_args()
     return args
 
@@ -75,11 +74,11 @@ def main():
     #--------------------------------------------------------
     init_seed()
     args = get_args()
-    device = torch.device(args.device)
     adj_mx = load_adj(args.adj_data_path, args.adj_type)
     train_loader, val_loader, test_loader, scaler = generate_train_val_test(args)
-    supports = [torch.tensor(i).to(device) for i in adj_mx]
+    supports = [torch.tensor(i).to(args.device) for i in adj_mx]
     print(f'\n***************** Input Args ******************\n{args}')
+
     #--------------------------------------------------------
     #------------------ Init model & trainer --------------------
     #--------------------------------------------------------
