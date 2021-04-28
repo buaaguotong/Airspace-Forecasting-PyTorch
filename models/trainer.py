@@ -32,7 +32,7 @@ class Trainer:
         self.train_per_epoch = len(train_loader)
         self.val_per_epoch = len(val_loader)
         if args.checkpoint:
-            self.log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M")}_test')
+            self.log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M%S")}_test')
         else:
             self.log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M")}')
         if os.path.isdir(self.log_dir) == False:

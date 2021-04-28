@@ -34,10 +34,22 @@ def load_adj(adj_data_path, adj_type):
     df = pd.read_csv(adj_data_path, header=None)
     adj_mx = df.to_numpy().astype(np.float32)
     if adj_type == "normlap":
-        adj = [calculate_normalized_laplacian(adj_mx)]
+        return adj
     elif adj_type == "doubletransition":
         adj = [asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))]
+
     return adj
+
+
+def load_multi_adj(path1, path2):
+    df1, df2 = pd.read_csv(path1, header=None), pd.read_csv(path2, header=None)
+    adj_mx_geo, adj_mx_flow = df1.to_numpy().astype(np.float32), df2.to_numpy().astype(np.float32)
+    adj = [
+        asym_adj(adj_mx_geo), asym_adj(adj_mx_flow),
+        asym_adj(np.transpose(adj_mx_geo)), asym_adj(np.transpose(adj_mx_flow))
+    ]
+    return adj
+
 
 if __name__ == "__main__":
     adj = load_adj('../data/adj_mx_geo_126.csv', 'normlap')

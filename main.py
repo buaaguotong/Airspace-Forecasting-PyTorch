@@ -7,7 +7,7 @@ import numpy as np
 import torch.optim as optim
 import torch.nn as nn
 
-from utils.adj_normalization import load_adj
+from utils.adj_normalization import load_adj, load_multi_adj
 from utils.data_generator import generate_train_val_test
 from models.trainer import Trainer
 from models.model import AirspaceModel
@@ -44,6 +44,7 @@ def get_args():
     parser.add_argument("--seq_length_x", type=int, default=12)
     parser.add_argument("--seq_length_y", type=int, default=12)
     parser.add_argument("--y_start", type=int, default=1)
+    parser.add_argument("--multi_graph", type=bool, default=False)
     # model args
     parser.add_argument('--in_dims', type=int, default=17)
     parser.add_argument('--out_dims', type=int, default=1)
@@ -77,7 +78,10 @@ def main():
     init_seed()
     args = get_args()
     train_loader, val_loader, test_loader, scaler = generate_train_val_test(args)
-    adj_mats = load_adj(args.adj_data_path, args.adj_type)
+    if args.multi_graph:
+        adj_mats = load_multi_adj('data/adj_mx_geo_126.csv', 'data/adj_mx_flow_126.csv')
+    else:
+        adj_mats = load_adj(args.adj_data_path, args.adj_type)
     adj_mats_torch = [torch.tensor(i).to(args.device) for i in adj_mats]
     print(f'\n***************** Input Args ******************\n{args}')
     
@@ -91,7 +95,7 @@ def main():
                           skip_channels=args.hid_dims*8, 
                           end_channels=args.hid_dims*4,
                           supports=adj_mats_torch,
-                          use_graph_conv=use_graph_conv)
+                          use_graph_conv=args.use_graph_conv)
     model = model.to(args.device)
     for p in model.parameters():
         if p.dim() > 1:
