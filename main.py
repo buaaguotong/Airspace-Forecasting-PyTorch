@@ -40,9 +40,9 @@ def get_args():
     parser.add_argument("--feature_data_path", type=str, default="data/features.npy")
     parser.add_argument("--adj_data_path", type=str, default="data/adj_mx_geo_126.csv")
     parser.add_argument("--adj_type", type=str, default="doubletransition")
-    parser.add_argument('--num_nodes', type=int, default=126)
-    parser.add_argument("--seq_length_x", type=int, default=12)
-    parser.add_argument("--seq_length_y", type=int, default=12)
+    parser.add_argument('--n_vertex', type=int, default=126)
+    parser.add_argument("--seq_length_x", type=int, default=10)
+    parser.add_argument("--seq_length_y", type=int, default=10)
     parser.add_argument("--y_start", type=int, default=1)
     # model args
     parser.add_argument('--in_dims', type=int, default=17)
@@ -54,7 +54,7 @@ def get_args():
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--lr_decay_rate', default=0.1, type=float)
     parser.add_argument('--lr_decay_step', default='5,20,40,70', type=str)
-    parser.add_argument('--dropout', type=float, default=0.3)
+    parser.add_argument('--drop_rate', type=float, default=0.3)
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--grad_norm', default=True, type=bool)
     parser.add_argument('--max_grad_norm', default=5, type=int)
@@ -74,15 +74,16 @@ def main():
     #--------------------------------------------------------
     init_seed()
     args = get_args()
-    adj_mx = load_adj(args.adj_data_path, args.adj_type)
     train_loader, val_loader, test_loader, scaler = generate_train_val_test(args)
-    supports = [torch.tensor(i).to(args.device) for i in adj_mx]
+    adj_mats = load_adj(args.adj_data_path, args.adj_type)
+    adj_mats_torch = [torch.tensor(i).to(args.device) for i in adj_mats]
     print(f'\n***************** Input Args ******************\n{args}')
-
+    
     #--------------------------------------------------------
     #------------------ Init model & trainer --------------------
     #--------------------------------------------------------
-    model = AirspaceModel(args.in_dims, args.out_dims, args.hid_dims)
+    model = AirspaceModel(args.in_dims, args.seq_length_y, args.hid_dims, args.hid_dims, 
+                            args.hid_dims*4, args.hid_dims*8)
     model = model.to(args.device)
     for p in model.parameters():
         if p.dim() > 1:

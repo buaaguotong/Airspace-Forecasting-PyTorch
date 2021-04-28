@@ -34,10 +34,10 @@ class Trainer:
         self.model.eval()
         total_val_loss = 0
         with torch.no_grad():
-            for batch_idx, (val_input, val_label) in enumerate(self.val_loader):
-                model_output = self.model(val_input)
-                label = self.scaler.inverse_transform(val_label)
-                loss = self.loss(model_output, label)
+            for (val_input, val_label) in iter(self.val_loader):
+                val_output = self.model(val_input)
+                pred, true = self.scaler.inverse_transform(val_output), self.scaler.inverse_transform(val_label)
+                loss = self.loss(pred, true)
                 total_val_loss += loss.item()
         val_loss = total_val_loss / self.val_per_epoch
         return val_loss
@@ -46,13 +46,12 @@ class Trainer:
     def train_epoch(self, epoch):
         self.model.train()
         total_train_loss = 0
-        for batch_idx, (train_input, train_label) in enumerate(self.train_loader):
+        for (train_input, train_label) in iter(self.train_loader):
             self.optimizer.zero_grad()
-            model_output = self.model(train_input)
-            label = self.scaler.inverse_transform(train_label)
-            loss = self.loss(model_output, label)
+            train_output = self.model(train_input)
+            pred, true = self.scaler.inverse_transform(train_output), self.scaler.inverse_transform(train_label)
+            loss = self.loss(pred, true)
             loss.backward()
-
             if self.args.grad_norm:
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.max_grad_norm)
             self.optimizer.step()
