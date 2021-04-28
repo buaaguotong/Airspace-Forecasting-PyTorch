@@ -82,8 +82,12 @@ def main():
     #--------------------------------------------------------
     #------------------ Init model & trainer --------------------
     #--------------------------------------------------------
-    model = AirspaceModel(args.in_dims, args.seq_length_y, args.hid_dims, args.hid_dims, 
-                            args.hid_dims*4, args.hid_dims*8)
+    model = AirspaceModel(in_channels=args.in_dims, 
+                          out_channels=args.out_dims, 
+                          residual_channels=args.hid_dims, 
+                          dilation_channels=args.hid_dims, 
+                          skip_channels=args.hid_dims*8, 
+                          end_channels=args.hid_dims*4)
     model = model.to(args.device)
     for p in model.parameters():
         if p.dim() > 1:
@@ -96,8 +100,15 @@ def main():
     optimizer = optim.Adam(params=model.parameters(), lr=args.lr, eps=1.0e-8, weight_decay=args.weight_decay, amsgrad=False)
     lr_decay_steps = [int(i) for i in list(args.lr_decay_step.split(','))]
     lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=lr_decay_steps, gamma=args.lr_decay_rate)
-    trainer = Trainer(model, loss, optimizer, lr_scheduler,  
-                    train_loader, val_loader, test_loader, scaler, args)
+    trainer = Trainer(model=model, 
+                      loss=loss, 
+                      optimizer=optimizer, 
+                      lr_scheduler=lr_scheduler, 
+                      train_loader=train_loader, 
+                      val_loader=val_loader, 
+                      test_loader=test_loader, 
+                      scaler=scaler, 
+                      args=args)
     trainer.train()
 
 

@@ -6,8 +6,17 @@ from models import layer
 
 
 class AirspaceModel(nn.Module):
-    def __init__(self, in_dims, out_dims, residual_channels, dilation_channels, skip_channels, end_channels,
-                kernel_size=2, blocks=4, layers=2, drop_rate=0.3):
+    def __init__(self, 
+                 in_channels=17, 
+                 out_channels=1, 
+                 residual_channels=32, 
+                 dilation_channels=32, 
+                 skip_channels=256, 
+                 end_channels=128, 
+                 kernel_size=2, 
+                 blocks=4, 
+                 layers=2, 
+                 drop_rate=0.3):
         super(AirspaceModel, self).__init__()
         self.blocks = blocks
         self.layers = layers
@@ -16,7 +25,7 @@ class AirspaceModel(nn.Module):
         receptive_field = 1
         depth = list(range(blocks * layers))
 
-        self.start_conv = nn.Conv2d(in_channels=in_dims, out_channels=residual_channels, kernel_size=(1,1))
+        self.start_conv = nn.Conv2d(in_channels, residual_channels, kernel_size=(1,1))
         self.residual_convs = nn.ModuleList([nn.Conv1d(dilation_channels, residual_channels, (1, 1)) for _ in depth])
         self.skip_convs = nn.ModuleList([nn.Conv1d(dilation_channels, skip_channels, (1, 1)) for _ in depth])
         self.bn = nn.ModuleList([nn.BatchNorm2d(residual_channels) for _ in depth])
@@ -28,12 +37,11 @@ class AirspaceModel(nn.Module):
             dilation = 1
             for _ in range(layers):
                 self.filter_convs.append(nn.Conv2d(residual_channels, dilation_channels, (1, kernel_size), dilation=dilation))
-                # idk why using Conv1d instead of Conv2d
                 self.gate_convs.append(nn.Conv1d(residual_channels, dilation_channels, (1, kernel_size), dilation=dilation))
                 dilation *= 2
                 receptive_field += additional_scope
                 additional_scope *= 2
-        self.output_layer = layer.OutputLayer(skip_channels, end_channels, out_dims)
+        self.output_layer = layer.OutputLayer(skip_channels, end_channels, out_channels)
 
         self.receptive_field = receptive_field
 

@@ -7,13 +7,20 @@ from datetime import datetime
 from utils.get_logger import get_logger
 
 class Trainer:
-    def __init__(self, model, loss, optimizer, lr_scheduler,  
-                    train_loader, val_loader, test_loader, scaler, args):
+    def __init__(self, 
+                 model, 
+                 loss, 
+                 optimizer, 
+                 lr_scheduler,
+                 train_loader, 
+                 val_loader, 
+                 test_loader, 
+                 scaler, 
+                 args):
         self.model = model
         self.loss = loss
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
-        
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
