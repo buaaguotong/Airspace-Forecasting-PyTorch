@@ -13,23 +13,33 @@ class AirspaceModel(nn.Module):
                  dilation_channels=32, 
                  skip_channels=256, 
                  end_channels=128, 
+                 supports=None,
+                 drop_rate=0.3,
                  kernel_size=2, 
                  blocks=4, 
                  layers=2, 
-                 drop_rate=0.3):
+                 use_graph_conv=True,
+                 handle_minor_features=True):
         super(AirspaceModel, self).__init__()
         self.blocks = blocks
         self.layers = layers
         self.drop_rate = drop_rate
-
+        self.handle_minor_features = handle_minor_features
+        self.supports = supports or []
+        self.use_graph_conv = use_graph_conv
+        
         receptive_field = 1
         depth = list(range(blocks * layers))
 
-        self.start_conv = nn.Conv2d(in_channels, residual_channels, kernel_size=(1,1))
+        if self.handle_minor_features:
+            self.start_conv = nn.Conv2d(1, residual_channels, kernel_size=(1, 1))
+            self.minor_features_conv = nn.Conv2d(in_channels-1, residual_channels, kernel_size=(1, 1))
+        else:
+            self.start_conv = nn.Conv2d(in_channels, residual_channels, kernel_size=(1,1))
         self.residual_convs = nn.ModuleList([nn.Conv1d(dilation_channels, residual_channels, (1, 1)) for _ in depth])
         self.skip_convs = nn.ModuleList([nn.Conv1d(dilation_channels, skip_channels, (1, 1)) for _ in depth])
         self.bn = nn.ModuleList([nn.BatchNorm2d(residual_channels) for _ in depth])
-
+        self.graph_convs = nn.ModuleList([layer.DiffGraphConv(dilation_channels, residual_channels, drop_rate, len(self.supports)) for _ in depth])
         self.filter_convs = nn.ModuleList()
         self.gate_convs = nn.ModuleList()
         for _ in range(blocks):
@@ -51,8 +61,13 @@ class AirspaceModel(nn.Module):
         seq_len = x.size(3)
         if seq_len < self.receptive_field:
             x = nn.functional.pad(x, (self.receptive_field - seq_len, 0, 0, 0))
-        x = self.start_conv(x)
+
+        if self.handle_minor_features:
+            x = self.start_conv(x[:,-1,...].unsqueeze(1)) + F.leaky_relu(self.minor_features_conv(x[:,:-1,...]))
+        else:
+            x = self.start_conv(x)
         skip = 0
+        adj_mats = self.supports
 
         for i in range(self.blocks * self.layers):
             residual = x
@@ -66,9 +81,11 @@ class AirspaceModel(nn.Module):
             skip = s + skip
             if i == (self.blocks * self.layers - 1):
                 break
-            
-            x = self.residual_convs[i](x)
 
+            if self.use_graph_conv:
+                x = x + self.graph_convs[i](x, adj_mats)
+            else:
+                x = self.residual_convs[i](x)
             x = x + residual[:, :, :, -x.size(3):]
             x = self.bn[i](x)
 

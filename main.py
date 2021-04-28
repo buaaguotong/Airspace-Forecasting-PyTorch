@@ -48,9 +48,10 @@ def get_args():
     parser.add_argument('--in_dims', type=int, default=17)
     parser.add_argument('--out_dims', type=int, default=1)
     parser.add_argument('--hid_dims', type=int, default=64)
+    parser.add_argument('--use_graph_conv', type=bool, default=True)
     # train args
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--epochs', type=int, default=200)
+    parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--lr_decay_rate', default=0.1, type=float)
     parser.add_argument('--lr_decay_step', default='5,20,40,70', type=str)
@@ -88,7 +89,9 @@ def main():
                           residual_channels=args.hid_dims, 
                           dilation_channels=args.hid_dims, 
                           skip_channels=args.hid_dims*8, 
-                          end_channels=args.hid_dims*4)
+                          end_channels=args.hid_dims*4,
+                          supports=adj_mats_torch,
+                          use_graph_conv=use_graph_conv)
     model = model.to(args.device)
     for p in model.parameters():
         if p.dim() > 1:
