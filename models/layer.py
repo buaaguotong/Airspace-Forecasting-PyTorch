@@ -50,11 +50,11 @@ class DiffGraphConv(nn.Module):
 
 
 class OutputLayer(nn.Module):
-    def __init__(self, skip_channels, end_channels, out_dims):
+    def __init__(self, skip_channels, end_channels, out_channels):
         super(OutputLayer, self).__init__()
 
         self.end_conv_1 = nn.Conv2d(skip_channels, end_channels, (1, 1), bias=True)
-        self.end_conv_2 = nn.Conv2d(end_channels, out_dims, (1, 1), bias=True)
+        self.end_conv_2 = nn.Conv2d(end_channels, out_channels, (1, 1), bias=True)
 
     def forward(self, x):
         x = F.relu(self.end_conv_1(x))

@@ -41,8 +41,8 @@ def get_args():
     parser.add_argument("--adj_data_path", type=str, default="data/adj_mx_geo_126.csv")
     parser.add_argument("--adj_type", type=str, default="doubletransition")
     parser.add_argument('--n_vertex', type=int, default=126)
-    parser.add_argument("--seq_length_x", type=int, default=10)
-    parser.add_argument("--seq_length_y", type=int, default=10)
+    parser.add_argument("--seq_length_x", type=int, default=12)
+    parser.add_argument("--seq_length_y", type=int, default=12)
     parser.add_argument("--y_start", type=int, default=1)
     # model args
     parser.add_argument('--in_dims', type=int, default=17)
