@@ -3,6 +3,8 @@ import time
 import torch
 import copy
 
+import numpy as np
+
 from datetime import datetime
 from utils.get_logger import get_logger
 
@@ -29,12 +31,14 @@ class Trainer:
 
         self.train_per_epoch = len(train_loader)
         self.val_per_epoch = len(val_loader)
-
-        log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M")}')
-        if os.path.isdir(log_dir) == False:
-            os.makedirs(log_dir, exist_ok=True)
-        self.logger = get_logger(log_dir, debug=args.debug)
-        self.best_path = os.path.join(log_dir, f'best_model_{datetime.now().strftime("%m%d%H%M")}.pth')
+        if args.checkpoint:
+            self.log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M")}_test')
+        else:
+            self.log_dir = os.path.join(args.log_dir, f'log_{datetime.now().strftime("%m%d%H%M")}')
+        if os.path.isdir(self.log_dir) == False:
+            os.makedirs(self.log_dir, exist_ok=True)
+        self.logger = get_logger(self.log_dir, debug=args.debug)
+        self.best_path = os.path.join(self.log_dir, f'best_model_{datetime.now().strftime("%m%d%H%M")}.pth')
 
 
     def val_epoch(self, epoch):
@@ -100,3 +104,23 @@ class Trainer:
         self.logger.info('*********************** Train Finish ***********************')
         self.logger.info(f'Saving current best model at {self.best_path}')
         self.logger.info(f"Total training time: {(training_time / 60):.4f} min, best loss: {best_loss:.6f}")
+
+
+    def test(self):
+        self.logger.info('*********************** Test Step ***********************')
+        outputs, labels = [], []
+        self.model.eval()
+        with torch.no_grad():
+            for (test_input, test_label) in iter(self.test_loader):
+                test_output = self.model(test_input)
+                pred, true = self.scaler.inverse_transform(test_output), self.scaler.inverse_transform(test_label)
+                outputs.append(pred.squeeze())
+                labels.append(true.squeeze())
+
+        outputs_stack = torch.cat(outputs, dim=0).permute(1,0,2).cpu().detach().numpy()
+        labels_stack = torch.cat(labels, dim=0).permute(1,0,2).cpu().detach().numpy()
+        result = {'prediction': outputs_stack, 'truth': labels_stack}
+        np.savez_compressed(os.path.join(self.log_dir,f'tcn_predictions_{datetime.now().strftime("%m%d%H%M")}.npz'), **result)
+        self.logger.info(f'prediction shape: {outputs_stack.shape} | truth shape: {labels_stack.shape}')
+
+        

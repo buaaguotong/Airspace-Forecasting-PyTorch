@@ -25,7 +25,7 @@ def init_seed(seed=2021):
     torch.backends.cudnn.deterministic = True
 
 
-def print_model_parameters(model, only_num = True):
+def print_model_parameters(model, only_num=True):
     print('\n***************** Model Parameter *****************')
     if not only_num:
         for name, param in model.named_parameters():
@@ -58,11 +58,12 @@ def get_args():
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--grad_norm', default=True, type=bool)
     parser.add_argument('--max_grad_norm', default=5, type=int)
-    parser.add_argument('--patience', default=30, type=int)
+    parser.add_argument('--patience', default=10, type=int)
     parser.add_argument('--device', type=str, default='cuda')
     # log & save args
     parser.add_argument('--log_dir', type=str, default='checkpoints')
     parser.add_argument('--debug', type=bool, default=False)
+    parser.add_argument('--checkpoint', type=str)
 
     args = parser.parse_args()
     return args
@@ -80,10 +81,10 @@ def main():
     print(f'\n***************** Input Args ******************\n{args}')
     
     #--------------------------------------------------------
-    #------------------ Init model & trainer --------------------
+    #----------------- Init model & trainer -----------------
     #--------------------------------------------------------
     model = AirspaceModel(in_channels=args.in_dims, 
-                          out_channels=args.out_dims, 
+                          out_channels=args.seq_length_y, 
                           residual_channels=args.hid_dims, 
                           dilation_channels=args.hid_dims, 
                           skip_channels=args.hid_dims*8, 
@@ -94,22 +95,35 @@ def main():
             nn.init.xavier_uniform_(p)
         else:
             nn.init.uniform_(p)
-    print_model_parameters(model, only_num=False)
+    print_model_parameters(model, only_num=True)
 
     loss = nn.MSELoss().to(args.device)
     optimizer = optim.Adam(params=model.parameters(), lr=args.lr, eps=1.0e-8, weight_decay=args.weight_decay, amsgrad=False)
     lr_decay_steps = [int(i) for i in list(args.lr_decay_step.split(','))]
     lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=lr_decay_steps, gamma=args.lr_decay_rate)
-    trainer = Trainer(model=model, 
-                      loss=loss, 
-                      optimizer=optimizer, 
-                      lr_scheduler=lr_scheduler, 
-                      train_loader=train_loader, 
-                      val_loader=val_loader, 
-                      test_loader=test_loader, 
-                      scaler=scaler, 
-                      args=args)
-    trainer.train()
+    if not args.checkpoint:
+        trainer = Trainer(model=model, 
+                        loss=loss, 
+                        optimizer=optimizer, 
+                        lr_scheduler=lr_scheduler, 
+                        train_loader=train_loader, 
+                        val_loader=val_loader, 
+                        test_loader=test_loader, 
+                        scaler=scaler, 
+                        args=args)
+        trainer.train()
+    else:
+        model.load_state_dict(torch.load(args.checkpoint))
+        tester = Trainer(model=model, 
+                        loss=loss, 
+                        optimizer=optimizer, 
+                        lr_scheduler=lr_scheduler, 
+                        train_loader=train_loader, 
+                        val_loader=val_loader, 
+                        test_loader=test_loader, 
+                        scaler=scaler, 
+                        args=args)
+        tester.test()
 
 
 if __name__ == "__main__":
