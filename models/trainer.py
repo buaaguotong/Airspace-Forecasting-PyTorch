@@ -5,6 +5,7 @@ import copy
 
 import numpy as np
 
+from tqdm import tqdm
 from datetime import datetime
 from utils.get_logger import get_logger
 
@@ -77,7 +78,7 @@ class Trainer:
         best_loss, not_improved_count = float('inf'), 0
 
         start_time = time.time()
-        for epoch in range(1, self.args.epochs + 1):
+        for epoch in tqdm(range(1, self.args.epochs + 1)):
             train_epoch_loss = self.train_epoch(epoch)
             val_epoch_loss = self.val_epoch(epoch)
             train_loss_list.append(train_epoch_loss)

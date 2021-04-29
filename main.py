@@ -50,6 +50,7 @@ def get_args():
     parser.add_argument('--out_dims', type=int, default=1)
     parser.add_argument('--hid_dims', type=int, default=64)
     parser.add_argument('--use_graph_conv', type=bool, default=True)
+    parser.add_argument('--use_graph_learning', type=bool, default=False)
     # train args
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=100)
@@ -79,10 +80,11 @@ def main():
     args = get_args()
     train_loader, val_loader, test_loader, scaler = generate_train_val_test(args)
     if args.multi_graph:
-        adj_mats = load_multi_adj('data/adj_mx_geo_126.csv', 'data/adj_mx_flow_126.csv')
+        adaptive_mat, adj_mats = load_multi_adj('data/adj_mx_geo_126.csv', 'data/adj_mx_flow_126.csv', use_graph_learning=args.use_graph_learning)
     else:
-        adj_mats = load_adj(args.adj_data_path, args.adj_type)
+        adaptive_mat, adj_mats = load_adj(args.adj_data_path, args.adj_type, use_graph_learning=args.use_graph_learning)
     adj_mats_torch = [torch.tensor(i).to(args.device) for i in adj_mats]
+    adaptive_mat_torch = torch.tensor(adaptive_mat).to(args.device)
     print(f'\n***************** Input Args ******************\n{args}')
     
     #--------------------------------------------------------
@@ -95,7 +97,8 @@ def main():
                           skip_channels=args.hid_dims*8, 
                           end_channels=args.hid_dims*4,
                           supports=adj_mats_torch,
-                          use_graph_conv=args.use_graph_conv)
+                          use_graph_conv=args.use_graph_conv,
+                          adaptive_mat_init=adaptive_mat_torch)
     model = model.to(args.device)
     for p in model.parameters():
         if p.dim() > 1:
