@@ -8,6 +8,7 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 from utils.get_logger import get_logger
+from utils.get_acc import get_acc
 
 class Trainer:
     def __init__(self, 
@@ -123,5 +124,6 @@ class Trainer:
         result = {'prediction': outputs_stack, 'truth': labels_stack}
         np.savez_compressed(os.path.join(self.log_dir,f'tcn_predictions_{datetime.now().strftime("%m%d%H%M")}.npz'), **result)
         self.logger.info(f'prediction shape: {outputs_stack.shape} | truth shape: {labels_stack.shape}')
+        get_acc(outputs_stack, labels_stack, self.logger)
 
         

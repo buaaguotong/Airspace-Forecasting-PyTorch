@@ -60,7 +60,7 @@ def get_args():
     parser.add_argument('--drop_rate', type=float, default=0.3)
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--grad_norm', default=True, type=bool)
-    parser.add_argument('--max_grad_norm', default=5, type=int)
+    parser.add_argument('--max_grad_norm', default=3, type=int)
     parser.add_argument('--patience', default=10, type=int)
     parser.add_argument('--device', type=str, default='cuda')
     # log & save args
