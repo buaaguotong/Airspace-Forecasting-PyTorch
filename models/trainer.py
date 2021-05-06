@@ -59,7 +59,7 @@ class Trainer:
     def train_epoch(self, epoch):
         self.model.train()
         total_train_loss = 0
-        for (train_input, train_label) in iter(self.train_loader):
+        for (train_input, train_label) in tqdm(iter(self.train_loader)):
             self.optimizer.zero_grad()
             train_output = self.model(train_input)
             pred, true = self.scaler.inverse_transform(train_output), self.scaler.inverse_transform(train_label)
@@ -79,7 +79,7 @@ class Trainer:
         best_loss, not_improved_count = float('inf'), 0
 
         start_time = time.time()
-        for epoch in tqdm(range(1, self.args.epochs + 1)):
+        for epoch in range(1, self.args.epochs + 1):
             train_epoch_loss = self.train_epoch(epoch)
             val_epoch_loss = self.val_epoch(epoch)
             train_loss_list.append(train_epoch_loss)

@@ -84,7 +84,7 @@ def main():
     else:
         adaptive_mat, adj_mats = load_adj(args.adj_data_path, args.adj_type, use_graph_learning=args.use_graph_learning)
     adj_mats_torch = [torch.tensor(i).to(args.device) for i in adj_mats]
-    adaptive_mat_torch = torch.tensor(adaptive_mat).to(args.device)
+    adaptive_mat_torch = torch.tensor(adaptive_mat).to(args.device) if args.use_graph_learning else None
     print(f'\n***************** Input Args ******************\n{args}')
     
     #--------------------------------------------------------
