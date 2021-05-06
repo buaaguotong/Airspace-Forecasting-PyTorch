@@ -78,13 +78,13 @@ def main():
     #--------------------------------------------------------
     init_seed()
     args = get_args()
-    train_loader, val_loader, test_loader, scaler = generate_train_val_test(args)
+    train_loader, val_loader, test_loader = generate_train_val_test(args)
     if args.multi_graph:
         adaptive_mat, adj_mats = load_multi_adj('data/adj_mx_geo_126.csv', 'data/adj_mx_flow_126.csv', use_graph_learning=args.use_graph_learning)
     else:
         adaptive_mat, adj_mats = load_adj(args.adj_data_path, args.adj_type, use_graph_learning=args.use_graph_learning)
     adj_mats_torch = [torch.tensor(i).to(args.device) for i in adj_mats]
-    adaptive_mat_torch = torch.tensor(adaptive_mat).to(args.device)
+    adaptive_mat_torch = torch.tensor(adaptive_mat).to(args.device) if args.use_graph_learning else None
     print(f'\n***************** Input Args ******************\n{args}')
     
     #--------------------------------------------------------
@@ -111,6 +111,7 @@ def main():
     optimizer = optim.Adam(params=model.parameters(), lr=args.lr, eps=1.0e-8, weight_decay=args.weight_decay, amsgrad=False)
     lr_decay_steps = [int(i) for i in list(args.lr_decay_step.split(','))]
     lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=lr_decay_steps, gamma=args.lr_decay_rate)
+    
     if not args.checkpoint:
         trainer = Trainer(model=model, 
                         loss=loss, 
@@ -119,7 +120,6 @@ def main():
                         train_loader=train_loader, 
                         val_loader=val_loader, 
                         test_loader=test_loader, 
-                        scaler=scaler, 
                         args=args)
         trainer.train()
     else:
@@ -131,7 +131,6 @@ def main():
                         train_loader=train_loader, 
                         val_loader=val_loader, 
                         test_loader=test_loader, 
-                        scaler=scaler, 
                         args=args)
         tester.test()
 

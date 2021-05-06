@@ -19,7 +19,6 @@ class Trainer:
                  train_loader, 
                  val_loader, 
                  test_loader, 
-                 scaler, 
                  args):
         self.model = model
         self.loss = loss
@@ -28,7 +27,6 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
-        self.scaler = scaler
         self.args = args
 
         self.train_per_epoch = len(train_loader)
@@ -49,7 +47,7 @@ class Trainer:
         with torch.no_grad():
             for (val_input, val_label) in iter(self.val_loader):
                 val_output = self.model(val_input)
-                pred, true = self.scaler.inverse_transform(val_output), self.scaler.inverse_transform(val_label)
+                pred, true = val_output, val_label
                 loss = self.loss(pred, true)
                 total_val_loss += loss.item()
         val_loss = total_val_loss / self.val_per_epoch
@@ -59,10 +57,10 @@ class Trainer:
     def train_epoch(self, epoch):
         self.model.train()
         total_train_loss = 0
-        for (train_input, train_label) in iter(self.train_loader):
+        for (train_input, train_label) in tqdm(iter(self.train_loader)):
             self.optimizer.zero_grad()
             train_output = self.model(train_input)
-            pred, true = self.scaler.inverse_transform(train_output), self.scaler.inverse_transform(train_label)
+            pred, true = train_output, train_label
             loss = self.loss(pred, true)
             loss.backward()
             if self.args.grad_norm:
@@ -79,7 +77,7 @@ class Trainer:
         best_loss, not_improved_count = float('inf'), 0
 
         start_time = time.time()
-        for epoch in tqdm(range(1, self.args.epochs + 1)):
+        for epoch in range(1, self.args.epochs + 1):
             train_epoch_loss = self.train_epoch(epoch)
             val_epoch_loss = self.val_epoch(epoch)
             train_loss_list.append(train_epoch_loss)
@@ -115,7 +113,7 @@ class Trainer:
         with torch.no_grad():
             for (test_input, test_label) in iter(self.test_loader):
                 test_output = self.model(test_input)
-                pred, true = self.scaler.inverse_transform(test_output), self.scaler.inverse_transform(test_label)
+                pred, true = test_output, test_label
                 outputs.append(pred.squeeze())
                 labels.append(true.squeeze())
 

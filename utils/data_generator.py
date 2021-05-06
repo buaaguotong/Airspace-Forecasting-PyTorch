@@ -3,6 +3,7 @@ import torch
 import os
 import numpy as np
 
+
 class StandardScaler:
     def __init__(self, mean, std):
         self.mean = mean
@@ -28,16 +29,13 @@ def data_loader(X, Y, batch_size, shuffle=True, drop_last=True):
 
 
 def normalize_dataset(data):
-    main_scaler = StandardScaler(data[..., -1].mean(), data[..., -1].std())
-    data[..., -1] = main_scaler.transform(data[..., -1])
-
-    for idx in range(data.shape[-1] - 1):
+    for idx in range(data.shape[-1]-1):
         feature_scaler = StandardScaler(data[..., idx].mean(), data[..., idx].std())
         data[..., idx] = feature_scaler.transform(data[..., idx])
-    return data, main_scaler
+    return data
 
 
-def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets, scaler=None):
+def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets):
     """
     :return:
     # x: (epoch_size, input_length, num_nodes, input_dim)
@@ -61,7 +59,7 @@ def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets, scaler=None):
 def generate_train_val_test(args):
     seq_length_x, seq_length_y = args.seq_length_x, args.seq_length_y
     raw_data = np.load(args.feature_data_path)
-    data, scaler = normalize_dataset(raw_data)
+    data = normalize_dataset(raw_data)
 
     x_offsets = np.sort(np.concatenate((np.arange(-(seq_length_x - 1), 1, 1),)))
     y_offsets = np.sort(np.arange(args.y_start, (seq_length_y + 1), 1))
@@ -88,17 +86,17 @@ def generate_train_val_test(args):
     train_dataloader = data_loader(x_train, y_train, args.batch_size, shuffle=True, drop_last=True)
     val_dataloader = data_loader(x_val, y_val, args.batch_size, shuffle=False, drop_last=True)
     test_dataloader = data_loader(x_test, y_test, args.batch_size, shuffle=False, drop_last=False)
-    return train_dataloader, val_dataloader, test_dataloader, scaler
+    return train_dataloader, val_dataloader, test_dataloader
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--raw_data_path", type=str, default="../data/features.npy")
+    parser.add_argument("--feature_data_path", type=str, default="../data/features.npy")
     parser.add_argument("--seq_length_x", type=int, default=12)
     parser.add_argument("--seq_length_y", type=int, default=12)
     parser.add_argument("--y_start", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=64)
 
     args = parser.parse_args()
-    train, val, test, scaler = generate_train_val_test(args)
+    train, val, test = generate_train_val_test(args)
     print(len(train.dataset))
