@@ -7,8 +7,9 @@ from models import layer
 
 class AirspaceModel(nn.Module):
     def __init__(self, 
-                 in_channels=17, 
-                 out_channels=1, 
+                 in_channels=19, 
+                 out_channels=3, 
+                 seq_length_y = 12,
                  residual_channels=32, 
                  dilation_channels=32, 
                  skip_channels=256, 
@@ -40,8 +41,8 @@ class AirspaceModel(nn.Module):
             self.nodevec1, self.nodevec2 = [nn.Parameter(n.to('cuda'), requires_grad=True) for n in nodevecs]
 
         if self.handle_minor_features:
-            self.start_conv = nn.Conv2d(1, residual_channels, kernel_size=(1, 1))
-            self.minor_features_conv = nn.Conv2d(in_channels-1, residual_channels, kernel_size=(1, 1))
+            self.start_conv = nn.Conv2d(out_channels, residual_channels, kernel_size=(1, 1))
+            self.minor_features_conv = nn.Conv2d(in_channels-out_channels, residual_channels, kernel_size=(1, 1))
         else:
             self.start_conv = nn.Conv2d(in_channels, residual_channels, kernel_size=(1,1))
         self.residual_convs = nn.ModuleList([nn.Conv1d(dilation_channels, residual_channels, (1, 1)) for _ in depth])
@@ -59,7 +60,7 @@ class AirspaceModel(nn.Module):
                 dilation *= 2
                 receptive_field += additional_scope
                 additional_scope *= 2
-        self.output_layer = layer.OutputLayer(skip_channels, end_channels, out_channels)
+        self.output_layer = layer.OutputLayer(skip_channels, end_channels, out_channels, seq_length_y)
 
         self.receptive_field = receptive_field
 
@@ -78,7 +79,7 @@ class AirspaceModel(nn.Module):
             x = nn.functional.pad(x, (self.receptive_field - seq_len, 0, 0, 0))
 
         if self.handle_minor_features:
-            x = self.start_conv(x[:,-1,...].unsqueeze(1)) + F.leaky_relu(self.minor_features_conv(x[:,:-1,...]))
+            x = self.start_conv(x[:,-3:,...]) + F.leaky_relu(self.minor_features_conv(x[:,:-3,...]))
         else:
             x = self.start_conv(x)
         skip = 0
@@ -108,7 +109,6 @@ class AirspaceModel(nn.Module):
                 x = self.residual_convs[i](x)
             x = x + residual[:, :, :, -x.size(3):]
             x = self.bn[i](x)
-
         x = F.relu(skip)
         x = self.output_layer(x)  # downsample to (batch_size, seq_len, n_vertex, features)
         return x

@@ -46,8 +46,8 @@ def get_args():
     parser.add_argument("--y_start", type=int, default=1)
     parser.add_argument("--multi_graph", type=bool, default=False)
     # model args
-    parser.add_argument('--in_dims', type=int, default=17)
-    parser.add_argument('--out_dims', type=int, default=1)
+    parser.add_argument('--in_dims', type=int, default=19)
+    parser.add_argument('--out_dims', type=int, default=3)
     parser.add_argument('--hid_dims', type=int, default=64)
     parser.add_argument('--use_graph_conv', type=bool, default=True)
     parser.add_argument('--use_graph_learning', type=bool, default=False)
@@ -91,7 +91,8 @@ def main():
     #----------------- Init model & trainer -----------------
     #--------------------------------------------------------
     model = AirspaceModel(in_channels=args.in_dims, 
-                          out_channels=args.seq_length_y, 
+                          out_channels=args.out_dims, 
+                          seq_length_y = args.seq_length_y,
                           residual_channels=args.hid_dims, 
                           dilation_channels=args.hid_dims, 
                           skip_channels=args.hid_dims*8, 
@@ -107,7 +108,8 @@ def main():
             nn.init.uniform_(p)
     print_model_parameters(model, only_num=True)
 
-    loss = nn.MSELoss().to(args.device)
+    # loss = nn.MSELoss().to(args.device)
+    loss = nn.CrossEntropyLoss().to(args.device)
     optimizer = optim.Adam(params=model.parameters(), lr=args.lr, eps=1.0e-8, weight_decay=args.weight_decay, amsgrad=False)
     lr_decay_steps = [int(i) for i in list(args.lr_decay_step.split(','))]
     lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=lr_decay_steps, gamma=args.lr_decay_rate)

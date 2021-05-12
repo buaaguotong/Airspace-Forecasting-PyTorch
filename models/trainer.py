@@ -47,7 +47,7 @@ class Trainer:
         with torch.no_grad():
             for (val_input, val_label) in iter(self.val_loader):
                 val_output = self.model(val_input)
-                pred, true = val_output, val_label
+                pred, true = val_output.reshape(-1, 3), val_label.reshape(-1).to(torch.long)
                 loss = self.loss(pred, true)
                 total_val_loss += loss.item()
         val_loss = total_val_loss / self.val_per_epoch
@@ -60,7 +60,7 @@ class Trainer:
         for (train_input, train_label) in tqdm(iter(self.train_loader)):
             self.optimizer.zero_grad()
             train_output = self.model(train_input)
-            pred, true = train_output, train_label
+            pred, true = train_output.reshape(-1, 3), train_label.reshape(-1).to(torch.long)
             loss = self.loss(pred, true)
             loss.backward()
             if self.args.grad_norm:
@@ -113,7 +113,7 @@ class Trainer:
         with torch.no_grad():
             for (test_input, test_label) in iter(self.test_loader):
                 test_output = self.model(test_input)
-                pred, true = test_output, test_label
+                pred, true = torch.argmax(test_output, axis=3), test_label.to(torch.long)
                 outputs.append(pred.squeeze())
                 labels.append(true.squeeze())
 

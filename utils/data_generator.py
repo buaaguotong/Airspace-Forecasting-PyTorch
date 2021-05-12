@@ -35,6 +35,15 @@ def normalize_dataset(data):
     return data
 
 
+def one_hot_encoding(data, classes=3):
+    features, main_feature = data[...,:-1], data[...,-1].reshape(-1).astype(int)
+    one_hot = np.zeros((main_feature.size, classes), dtype=float)
+    one_hot[np.arange(main_feature.size), main_feature.ravel()] = 1
+    one_hot = one_hot.reshape(features.shape[0], features.shape[1], features.shape[2], -1)
+    encoded_data = np.concatenate((features, one_hot), axis=3)    
+    return encoded_data
+
+
 def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets):
     """
     :return:
@@ -52,6 +61,7 @@ def generate_graph_seq2seq_io_data(data, x_offsets, y_offsets):
         x.append(x_t)
         y.append(y_t)
     x = np.stack(x, axis=0)
+    x = one_hot_encoding(x)
     y = np.stack(y, axis=0)
     return x, y
 
