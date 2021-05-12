@@ -114,8 +114,8 @@ class Trainer:
             for (test_input, test_label) in iter(self.test_loader):
                 test_output = self.model(test_input)
                 pred, true = torch.argmax(test_output, axis=3), test_label.to(torch.long)
-                outputs.append(pred.squeeze())
-                labels.append(true.squeeze())
+                outputs.append(pred)
+                labels.append(true.squeeze(dim=3))
 
         outputs_stack = torch.cat(outputs, dim=0).permute(1,0,2).cpu().detach().numpy()
         labels_stack = torch.cat(labels, dim=0).permute(1,0,2).cpu().detach().numpy()
