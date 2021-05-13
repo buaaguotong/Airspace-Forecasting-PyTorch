@@ -48,11 +48,11 @@ def get_args():
     # model args
     parser.add_argument('--in_dims', type=int, default=17)
     parser.add_argument('--out_dims', type=int, default=1)
-    parser.add_argument('--hid_dims', type=int, default=64)
+    parser.add_argument('--hid_dims', type=int, default=128)
     parser.add_argument('--use_graph_conv', type=bool, default=True)
     parser.add_argument('--use_graph_learning', type=bool, default=False)
     # train args
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--lr_decay_rate', default=0.1, type=float)
