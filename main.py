@@ -44,13 +44,14 @@ def get_args():
     parser.add_argument("--seq_length_x", type=int, default=12)
     parser.add_argument("--seq_length_y", type=int, default=12)
     parser.add_argument("--y_start", type=int, default=1)
-    parser.add_argument("--multi_graph", type=bool, default=False)
+    parser.add_argument("--use_multi_graph", dest='multi_graph', action='store_true', default=False)
     # model args
     parser.add_argument('--in_dims', type=int, default=17)
     parser.add_argument('--out_dims', type=int, default=1)
     parser.add_argument('--hid_dims', type=int, default=128)
-    parser.add_argument('--use_graph_conv', type=bool, default=True)
-    parser.add_argument('--use_graph_learning', type=bool, default=False)
+    parser.add_argument('--nonuse_graph_conv', dest='use_graph_conv', action='store_false', default=True)
+    parser.add_argument('--nonuse_graph_learning', dest='use_graph_learning', action='store_false', default=False)
+    
     # train args
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=100)
@@ -65,7 +66,7 @@ def get_args():
     parser.add_argument('--device', type=str, default='cuda')
     # log & save args
     parser.add_argument('--log_dir', type=str, default='checkpoints')
-    parser.add_argument('--debug', type=bool, default=False)
+    parser.add_argument('--use_debug', dest='debug', action='store_true', default=False)
     parser.add_argument('--checkpoint', type=str)
 
     args = parser.parse_args()

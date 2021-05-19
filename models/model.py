@@ -21,7 +21,8 @@ class AirspaceModel(nn.Module):
                  use_graph_conv=True,
                  adaptive_mat_init=None,
                  adaptive_mat_size=10,
-                 handle_minor_features=True):
+                 handle_minor_features=True,
+                 use_adaptive_mat_only=False):
         super(AirspaceModel, self).__init__()
         self.blocks = blocks
         self.layers = layers
@@ -31,6 +32,7 @@ class AirspaceModel(nn.Module):
         self.supports_len = len(self.supports)
         self.use_graph_conv = use_graph_conv
         self.adaptive_mat_init = adaptive_mat_init
+        self.use_adaptive_mat_only = use_adaptive_mat_only
         
         receptive_field = 1
         depth = list(range(blocks * layers))
@@ -38,6 +40,8 @@ class AirspaceModel(nn.Module):
             nodevecs = self.svd_init(adaptive_mat_size, self.adaptive_mat_init)
             self.supports_len += 1
             self.nodevec1, self.nodevec2 = [nn.Parameter(n.to('cuda'), requires_grad=True) for n in nodevecs]
+
+        self.supports_len = self.supports_len if not use_adaptive_mat_only else 1
 
         if self.handle_minor_features:
             self.start_conv = nn.Conv2d(1, residual_channels, kernel_size=(1, 1))
@@ -83,7 +87,10 @@ class AirspaceModel(nn.Module):
             x = self.start_conv(x)
         skip = 0
 
-        if self.adaptive_mat_init is not None:
+        if self.use_adaptive_mat_only:
+            adp = F.softmax(F.relu(torch.mm(self.nodevec1, self.nodevec2)), dim=1)
+            adj_mats = [adp]
+        elif self.adaptive_mat_init is not None:
             adp = F.softmax(F.relu(torch.mm(self.nodevec1, self.nodevec2)), dim=1)
             adj_mats = self.supports + [adp]
         else:
